@@ -1,1 +1,3 @@
 import floof
+
+floof.Matcher()
