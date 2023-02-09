@@ -1,0 +1,7 @@
+jarowinkler
+jellyfish
+Levenshtein
+numpy
+pandas
+sklearn
+thefuzz[speedup]

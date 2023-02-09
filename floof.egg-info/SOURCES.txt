@@ -1,0 +1,9 @@
+setup.py
+floof/__init__.py
+floof/fuzzy.py
+floof.egg-info/PKG-INFO
+floof.egg-info/SOURCES.txt
+floof.egg-info/dependency_links.txt
+floof.egg-info/requires.txt
+floof.egg-info/top_level.txt
+tests/test.py
