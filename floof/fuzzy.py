@@ -209,7 +209,7 @@ class Matcher:
 
         return (pct, lookup_str)
 
-    def _get_matches_distance(self, scorer: Callable, k_matches: int, threshold: int) -> pd.DataFrame:
+    def _get_matches_pct(self, scorer: Callable, k_matches: int, threshold: int) -> pd.DataFrame:
         original = self._original
         lookup = self._lookup
         
@@ -238,7 +238,7 @@ class Matcher:
 
         return self._clean_and_filter(merged, threshold)
 
-    def _get_matches_pct(self, scorer: Callable, k_matches: int, threshold: int) -> pd.DataFrame:
+    def _get_matches_distance(self, scorer: Callable, k_matches: int, threshold: int) -> pd.DataFrame:
         original = self._original
         lookup = self._lookup
         
@@ -266,46 +266,6 @@ class Matcher:
                 merged["score"].append(score)
 
         merged = pd.DataFrame(merged)
-
-        return self._clean_and_filter(merged, threshold)
-
-    def _get_matches_pct(
-        self, 
-        scorer: Callable, 
-        k_matches: int, 
-        threshold: int,
-        already_ratio: bool=False
-    ) -> pd.DataFrame:
-        original = self._original
-        lookup = self._lookup
-        
-        # Maybe premature optimization, but let's store all the things we will need in variables
-        # up front, instead of paying the cost of, e.g. lookup in the loop
-        og_colname = original.name
-        lu_colname = lookup.name
-
-        merged = {og_colname: [], lu_colname: [], "score": []}
-        for o_str in original:
-            o_str_len = len(o_str)
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                func = functools.partial(
-                    self._get_score_from_distance,
-                    original_str=o_str,
-                    original_str_len=o_str_len,
-                    scorer=scorer
-                )
-                matches = pool.map(func, lookup)
-
-            matches = heapq.nlargest(k_matches, matches)
-            for score, lu_name in matches:
-                merged[og_colname].append(o_str)
-                merged[lu_colname].append(lu_name)
-                merged["score"].append(score)
-
-        merged = pd.DataFrame(merged)
-
-        if already_ratio:
-            merged["score"] = merged["score"] / 100
 
         return self._clean_and_filter(merged, threshold)
 
@@ -421,6 +381,7 @@ class Matcher:
         k_matches: int=5,
         threshold: int=80,
         filter: bool=True,
+        filter_k_matches: int=20,
         filter_threshold: int=50,
         drop_intermediate: bool=True
     ) -> pd.DataFrame:
@@ -453,7 +414,11 @@ class Matcher:
             k_matches (int, optional): Defaults to 5.
                 Up to how many matches should be returned. 
             threshold (int, optional): Defaults to 80.
-                Keep only matches above this score. 
+                Keep only matches above this score. Note that this applies only to the FINAL
+                calculated score. This is because if it applied at each individual step, information
+                would be lost. For example, a Hamming score of 79 provides more information than
+                a Hamming score of 60, but both would be set to 0 if it applied to each individual
+                step. 
             filter (bool, optional): Defaults to True.
                 If True, uses TFIDF to filter out unlikely matches. 
             filter_threshold (int, optional): Defaults to 50.
@@ -498,18 +463,23 @@ class Matcher:
         final = final.rename(columns={"score": "exact_score"})
 
         # Remove exact matches from the possible pool
-        self._lookup = self._lookup.loc[self._lookup.isin(set(final[lu_colname]))]
+        mask = ~(self._lookup.isin(set(final[lu_colname])))
+        self._lookup = self._lookup.loc[mask]
 
         # Filter using tfidf
         if filter:
             # Use tfidf match, getting max number of neighbors, and applying a generous default
             # threshold of 50
-            tfidf = self.tfidf(k_matches=None, threshold=filter_threshold)
+            try:
+                tfidf = self.tfidf(k_matches=filter_k_matches, threshold=filter_threshold)
+            except ValueError:
+                tfidf = self.tfidf(k_matches=None, threshold=filter_threshold)
+
             self._lookup = self._lookup.loc[self._lookup.isin(set(tfidf[lu_colname]))]
 
         # Check if we have the required number observations on both sides
         num_exact_matches = len(final.index)
-        lookups_left = len(self.lookup.index)
+        lookups_left = len(self._lookup.index)
         if num_exact_matches == 0 and lookups_left == 0:
             raise ValueError("No valid lookups.")
         elif num_exact_matches > 0 and lookups_left == 0:
@@ -524,27 +494,20 @@ class Matcher:
             func = self._dispatcher(scorer_nm)
 
             if scorer_nm in edit_scorers:
-                df = func(k_matches=k_matches, threshold=threshold)
+                df = func(k_matches=k_matches, threshold=0)
             elif scorer_nm in nn_scorers:
                 # If we have already filtered using tfidf, no sense in doing it again
                 if scorer_nm == "tfidf" and filter and filter_threshold >= threshold:
-                    df = (
-                        df.loc[tfidf["score"] >= threshold]
-                          .groupby(og_colname)
-                          .head(k_matches)
-                          .reset_index(drop=True)
-                          .rename(columns={"score": "tfidf_score"})
-                    )
-                    continue
-
-                # With nearest neighbor, k_matches is not UP to k_matches, it is that number of
-                # neighbors exactly, which can cause the algorithm to error. If this happens, it
-                # is likely that user wants up to k_matches, so try again with the "None" option,
-                # which sets k_matches to the maximum possible value.
-                try:
-                    df = func(k_matches=k_matches, threshold=threshold)
-                except ValueError:
-                    df = func(k_matches=None, threshold=threshold)
+                    df = tfidf
+                else:
+                    # With nearest neighbor, k_matches is not UP to k_matches, it is that number of
+                    # neighbors exactly, which can cause the algorithm to error. If this happens, it
+                    # is likely that user wants up to k_matches, so try again with the "None" 
+                    # option, which sets k_matches to the maximum possible value.
+                    try:
+                        df = func(k_matches=k_matches, threshold=0)
+                    except ValueError:
+                        df = func(k_matches=None, threshold=0)
             elif scorer_nm in phonetic_scorers:
                 df = func()
             else:
@@ -567,8 +530,9 @@ class Matcher:
             )
 
         # Finally, calculate the score
-        final["final_score"] = final[score_cols].sum(axis=0)
+        final["final_score"] = final[score_cols].sum(axis=1, skipna=True)
         final["final_score"] = np.where(final["exact_score"] == 100, 100, final["final_score"])
+        final = final.loc[final["score"] >= threshold]
 
         if drop_intermediate:
             final = final[[og_colname, lu_colname, "final_score"]]
