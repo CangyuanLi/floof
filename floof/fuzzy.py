@@ -209,7 +209,13 @@ class Matcher:
 
         return (pct, lookup_str)
 
-    def _get_matches_pct(self, scorer: Callable, k_matches: int, threshold: int) -> pd.DataFrame:
+    def _get_matches_pct(
+        self, 
+        scorer: Callable, 
+        k_matches: int, 
+        threshold: int,
+        already_ratio: bool=False
+    ) -> pd.DataFrame:
         original = self._original
         lookup = self._lookup
         
@@ -235,6 +241,9 @@ class Matcher:
                 merged["score"].append(score)
 
         merged = pd.DataFrame(merged)
+
+        if already_ratio:
+            merged["score"] = merged["score"] / 100
 
         return self._clean_and_filter(merged, threshold)
 
@@ -532,7 +541,7 @@ class Matcher:
         # Finally, calculate the score
         final["final_score"] = final[score_cols].sum(axis=1, skipna=True)
         final["final_score"] = np.where(final["exact_score"] == 100, 100, final["final_score"])
-        final = final.loc[final["score"] >= threshold]
+        final = final.loc[final["final_score"] >= threshold]
 
         if drop_intermediate:
             final = final[[og_colname, lu_colname, "final_score"]]

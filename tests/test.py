@@ -20,6 +20,7 @@ a = matcher.match(threshold=80, drop_intermediate=False)
 a = matcher.match(scorers=["match_rating_codex",
     "metaphone",
     "nysiis",
-    "soundex"], threshold=80, drop_intermediate=False)
+    "soundex",
+    "partial_ratio"], threshold=0, drop_intermediate=False)
 
 print(a)
