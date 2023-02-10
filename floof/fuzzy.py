@@ -117,17 +117,11 @@ class Comparer:
         
         score_lst = []
         with tqdm.tqdm(total=len(self._original.index)) as pbar:
-            with concurrent.futures.ProcessPoolExecutor() as pool:
-                futures = [
-                    pool.submit(match_func, o_str, lu_str, scorer) for o_str, lu_str \
-                        in zip(original, lookup)
-                ]
+            for o_str, lu_str in zip(original, lookup):
+                score, _, _ = match_func(o_str, lu_str, scorer)
+                score_lst.append(score)
 
-                for future in concurrent.futures.as_completed(futures):
-                    score, _, _ = future.result()
-                    score_lst.append(score)
-
-                    pbar.update(1)
+                pbar.update(1)
 
         res = pd.Series(score_lst)
         
