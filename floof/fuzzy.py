@@ -96,6 +96,9 @@ class Comparer:
                 raise TypeError(f"Column {col.name} is not string type.")
 
     def _get_score_from_distance(self, o_str: str, lu_str: str, scorer: Callable) -> float:
+        if o_str == "" or lu_str == "":
+            return 0
+            
         o_str_len = len(o_str)
 
         return _get_score_from_distance(o_str, lu_str, o_str_len, scorer)
