@@ -1,1 +1,1 @@
-from floof.fuzzy import Matcher
+from floof.fuzzy import Comparer, Matcher

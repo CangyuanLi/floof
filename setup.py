@@ -15,7 +15,8 @@ setuptools.setup(
         "numpy",
         "pandas",
         "sklearn",
-        "thefuzz[speedup]"
+        "thefuzz[speedup]",
+        "tqdm"
     ],
     license="MIT",
     classifiers=[
