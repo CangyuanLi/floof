@@ -57,7 +57,7 @@ def _get_score_from_distance(
     original_str: str,
     original_str_len: int,
     scorer: Callable
-) -> float:
+) -> tuple[float, str, str]:
     dist = scorer(original_str, lookup_str)
 
     # For methods that return a distance instead of a percentage, divide the returned distance
@@ -68,7 +68,7 @@ def _get_score_from_distance(
 
     return (pct, original_str, lookup_str)
 
-def _get_score(lookup_str: str, original_str: str, scorer: Callable) -> float:
+def _get_score(lookup_str: str, original_str: str, scorer: Callable) -> tuple[float, str, str]:
     pct = scorer(original_str, lookup_str)
 
     return (pct, original_str, lookup_str)
@@ -97,8 +97,8 @@ class Comparer:
 
     def _get_score_from_distance(self, o_str: str, lu_str: str, scorer: Callable) -> float:
         if o_str == "" or lu_str == "":
-            return 0
-            
+            return (0, o_str, lu_str)
+
         o_str_len = len(o_str)
 
         return _get_score_from_distance(o_str, lu_str, o_str_len, scorer)
