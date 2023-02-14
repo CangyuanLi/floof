@@ -43,14 +43,6 @@ PhoneticScorers = Literal[
 
 AllScorers = Literal[EditDistanceScorers, NearestNeighborScorers, PhoneticScorers]
 
-DEFAULT_SCORERS = {
-    "damerau_levenshtein": 1, 
-    "jaro": .9, 
-    "jaro_winkler": 1, 
-    "levenshtein": .9,
-    "tfidf": .8
-}
-
 # Functions used in both classes
 def _get_score_from_distance(
     lookup_str: str,
@@ -625,8 +617,15 @@ class Matcher:
 
         # Define scorers and weights
         if weights is None and scorers is None:
-            scorers = DEFAULT_SCORERS.keys()
-            weights = DEFAULT_SCORERS.values()
+            default_scorers = {
+                "damerau_levenshtein": 1, 
+                "jaro": .9, 
+                "jaro_winkler": 1, 
+                "levenshtein": .9,
+                "tfidf": .8
+            }
+            scorers = default_scorers.keys()
+            weights = default_scorers.values()
         elif weights is None and scorers is not None:
             weights = [1 for _ in scorers]
 
