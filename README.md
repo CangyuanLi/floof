@@ -1,4 +1,5 @@
 # floof: simple fuzzymatching / comparison library
+![PyPI - Downloads](https://img.shields.io/pypi/dm/floof)
 
 ## What is it?
 
