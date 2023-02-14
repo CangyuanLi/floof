@@ -215,12 +215,32 @@ class Comparer:
 
     def compare(
         self, 
-        scorers: EditDistanceScorers, 
-        weights: list[int | float]
-    ) -> pd.Series:
+        scorers: EditDistanceScorers=None, 
+        weights: list[int | float]=None,
+        drop_intermediate: bool=True
+    ) -> pd.Series | pd.DataFrame:
+
+        # Define scorers and weights
+        if weights is None and scorers is None:
+            default_scorers = {
+                "damerau_levenshtein": 1, 
+                "jaro": .9, 
+                "jaro_winkler": 1, 
+                "levenshtein": .9,
+                "partial_ratio": .5,
+                "token_sort_ratio": .6,
+            }
+            scorers = default_scorers.keys()
+            weights = default_scorers.values()
+        elif weights is None and scorers is not None:
+            weights = [1 for _ in scorers]
+
+        if len(weights) != len(scorers):
+            raise ValueError("Number of scorers and weights must match.")
+
         sum_w = sum(weights)
         weights = [w / sum_w for w in weights] # normalize to 1
-        scorer_dict = {k: v for k, v in zip(scorers, weights)}
+        scorer_dict = {s: w for s, w in zip(scorers, weights)}
         
         scores = dict()
         for func_nm, weight in scorer_dict.items():
@@ -230,7 +250,10 @@ class Comparer:
         df = pd.DataFrame(scores)
         df["final_score"] = df[list(scores.keys())].sum(axis=1, skipna=True)
 
-        return df["final_score"]
+        if drop_intermediate:
+            return df["final_score"]
+
+        return df
 
 class Matcher:
 
