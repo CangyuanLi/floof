@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="floof",
-    version="0.0.9",
+    version="0.1.0",
     author="Cangyuan Li",
     author_email="everest229@gmail.com",
     description="A library for fuzzymatching",
