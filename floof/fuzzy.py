@@ -6,6 +6,7 @@ import re
 import typing
 from typing import Callable, Literal
 
+import fast_distance
 import jarowinkler
 import jellyfish
 import Levenshtein
@@ -464,10 +465,21 @@ class Matcher:
 
         return self._clean_and_filter(merged, threshold)
 
-    def damerau_levenshtein(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def damerau_levenshtein(
+        self, 
+        k_matches: int=5, 
+        threshold: int=80, 
+        ncpus: int=None,
+        ascii_only: bool=False
+    ) -> pd.DataFrame:
+        if ascii_only:
+            scorer = fast_distance.damerau_levenshtein_distance
+        else:
+            scorer = jellyfish.damerau_levenshtein_distance
+
         return self._get_all_matches(
             match_func=self._get_matches_distance,
-            scorer=jellyfish.damerau_levenshtein_distance,
+            scorer=scorer,
             k_matches=k_matches, 
             threshold=threshold,
             ncpus=ncpus
@@ -482,10 +494,21 @@ class Matcher:
             ncpus=ncpus
         )
 
-    def hamming(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def hamming(
+        self, 
+        k_matches: int=5, 
+        threshold: int=80, 
+        ncpus: int=None, 
+        ascii_only: bool=True
+    ) -> pd.DataFrame:
+        if ascii_only:
+            scorer = fast_distance.hamming_distance
+        else:
+            scorer = jellyfish.hamming_distance
+
         return self._get_all_matches(
             match_func=self._get_matches_distance,
-            scorer=jellyfish.hamming_distance,
+            scorer=scorer,
             k_matches=k_matches,
             threshold=threshold,
             ncpus=ncpus

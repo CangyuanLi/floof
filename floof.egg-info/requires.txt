@@ -1,3 +1,4 @@
+fast_distance
 jarowinkler
 jellyfish
 Levenshtein

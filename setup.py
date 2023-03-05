@@ -9,6 +9,7 @@ setuptools.setup(
     url="https://github.com/CangyuanLi/floof",
     packages=["floof"],
     install_requires=[
+        "fast_distance",
         "jarowinkler",
         "jellyfish",
         "Levenshtein",
