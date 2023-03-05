@@ -13,8 +13,8 @@ def main():
 
     matcher = floof.Matcher(df["name1"], df["name2"])
 
-    cutils.time_func(lambda: matcher.hamming(ncpus=1), warmups=1, iterations=2)
-    cutils.time_func(lambda: matcher.hamming(ncpus=1, ascii_only=True), warmups=1, iterations=2)
+    cutils.time_func(lambda: matcher.hamming(ncpus=2), warmups=1, iterations=2)
+    cutils.time_func(lambda: matcher.hamming(ncpus=2, ascii_only=True), warmups=1, iterations=2)
 
 
 if __name__ == "__main__":
