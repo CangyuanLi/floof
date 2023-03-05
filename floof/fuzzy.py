@@ -599,7 +599,8 @@ class Matcher:
         filter: bool=True,
         filter_k_matches: int=20,
         filter_threshold: int=50,
-        drop_intermediate: bool=True
+        drop_intermediate: bool=True,
+        ncpus: int=None,
     ) -> pd.DataFrame:
         """
         A convenience function to iterate through multiple different matching algorithms and
@@ -717,7 +718,7 @@ class Matcher:
             func = self._dispatcher(scorer_nm)
 
             if scorer_nm in edit_scorers:
-                df = func(k_matches=k_matches, threshold=0)
+                df = func(k_matches=k_matches, threshold=0, ncpus=ncpus)
             elif scorer_nm in nn_scorers:
                 # If we have already filtered using tfidf, no sense in doing it again
                 if scorer_nm == "tfidf" and filter and filter_threshold >= threshold:
