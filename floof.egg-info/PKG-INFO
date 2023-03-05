@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: floof
-Version: 0.1.0
+Version: 0.1.1
 Summary: A library for fuzzymatching
 Home-page: https://github.com/CangyuanLi/floof
 Author: Cangyuan Li
@@ -9,6 +9,7 @@ License: MIT
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
 
 # floof: simple fuzzymatching / comparison library
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/floof)
