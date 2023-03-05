@@ -434,11 +434,12 @@ class Matcher:
 
         with tqdm.tqdm(total=len(self._original.index)) as pbar:
             if ncpus == 1: # this is just single-threading
-                matches = match_func(o_str, lookup, scorer, k_matches)
-                for score, o_str, lu_str in matches:
-                    merged[og_colname].append(o_str)
-                    merged[lu_colname].append(lu_str)
-                    merged["score"].append(score)
+                for o_str in original:
+                    matches = match_func(o_str, lookup, scorer, k_matches)
+                    for score, o_str, lu_str in matches:
+                        merged[og_colname].append(o_str)
+                        merged[lu_colname].append(lu_str)
+                        merged["score"].append(score)
 
                     pbar.update(1)
             else:
@@ -454,7 +455,7 @@ class Matcher:
                             merged[lu_colname].append(lu_str)
                             merged["score"].append(score)
 
-                    pbar.update(1)
+                        pbar.update(1)
 
         merged = pd.DataFrame(merged)
         
