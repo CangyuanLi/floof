@@ -13,6 +13,7 @@ def main():
 
     matcher = floof.Matcher(df["name1"], df["name2"])
     cutils.time_func(matcher.hamming, warmups=1, iterations=10)
+    cutils.time_func(matcher.hamming, warmups=1, iterations=10)
 
 if __name__ == "__main__":
     main()
