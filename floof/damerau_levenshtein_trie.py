@@ -1,14 +1,13 @@
-import jellyfish
+import heapq
 
-from trie import Trie, TrieNode
+import pandas as pd
+import tqdm
 
-word_trie = Trie()
-for word in ("danger", "dangerous", "blah", "blooping"):
-    word_trie.insert(word)
+from .trie import Trie, TrieNode
 
 def recursive_search(node: TrieNode, letter: str, word: str, previous_row, results):
-
-    columns = len(word) + 1
+    word_len = len(word)
+    columns = word_len + 1
     current_row = [previous_row[0] + 1]
 
     # Build one row for the letter, with a column for each letter in the target
@@ -28,7 +27,9 @@ def recursive_search(node: TrieNode, letter: str, word: str, previous_row, resul
     # if the last entry in the row indicates the optimal cost is less than the
     # maximum cost, and there is a word in this trie node, then add it.
     if node.word != None:
-        results.append((node.word, current_row[-1]))
+        max_len = max(word_len, len(node.word))
+        pct = (max_len - current_row[-1]) / max_len
+        results.append((pct, node.word))
 
     # if any entries in the row are less than the maximum cost, then 
     # recursively search each branch of the trie
@@ -41,9 +42,14 @@ def recursive_search(node: TrieNode, letter: str, word: str, previous_row, resul
             results 
         )
 
+def build_trie(lookup: list[str]):
+    word_trie = Trie()
+    for l in lookup:
+        word_trie.insert(l)
 
-# maximum distance from the target word
-def search(trie: Trie, word: str):
+    return word_trie
+
+def _match(trie: Trie, word: str):
 
     # build first row
     current_row = range(len(word) + 1)
@@ -62,11 +68,28 @@ def search(trie: Trie, word: str):
 
     return results
 
-# This recursive helper is used by the search function above. It assumes that
-# the previous_row has been filled in already.
+def match(original: list[str], lookup: list[str], k_matches: int=5, ncpus: int=1):
+    _trie = build_trie(lookup)
+    og_colname = "a"
+    lu_colname = "b"
+    merged = {og_colname: [], lu_colname: [], "score": []}
 
-res = search(word_trie, "blah")
-print(res)
+    with tqdm.tqdm(total=len(original)) as pbar:
+        if ncpus == 1: # this is just single-threading
+            for o_str in original:
+                matches = _match(_trie, o_str)
+                matches = heapq.nlargest(k_matches, matches)
+                for score, lu_str in matches:
+                    merged[og_colname].append(o_str)
+                    merged[lu_colname].append(lu_str)
+                    merged["score"].append(score)
 
-print(jellyfish.damerau_levenshtein_distance("blah", "dangerous"))
+                pbar.update(1)
 
+    merged = pd.DataFrame(merged)
+
+    return merged
+
+# original = ["apple", "appl", "bannan"]
+# lookup = ["apple", "ascit", "one dane", "lickitysplicity"]
+# match(original, lookup, 5, 1)

@@ -17,6 +17,8 @@ import sklearn.neighbors
 from thefuzz import fuzz
 import tqdm
 
+from .damerau_levenshtein_trie import match as dltrie_match
+
 EditDistanceScorers = Literal[
     "damerau_levenshtein",
     "hamming",
@@ -463,6 +465,17 @@ class Matcher:
         if already_ratio:
             merged["score"] = merged["score"] / 100
 
+        return self._clean_and_filter(merged, threshold)
+
+    def damerau_levenshtein_trie(
+        self, 
+        k_matches: int=5, 
+        threshold: int=80, 
+        ncpus: int=1,
+    ):
+        original = self._original.to_list()
+        lookup = self._lookup.to_list()
+        merged = dltrie_match(original, lookup, k_matches=k_matches, ncpus=ncpus)
         return self._clean_and_filter(merged, threshold)
 
     def damerau_levenshtein(

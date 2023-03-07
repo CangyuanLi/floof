@@ -1,7 +1,9 @@
 README.md
 setup.py
 floof/__init__.py
+floof/damerau_levenshtein_trie.py
 floof/fuzzy.py
+floof/trie.py
 floof.egg-info/PKG-INFO
 floof.egg-info/SOURCES.txt
 floof.egg-info/dependency_links.txt
