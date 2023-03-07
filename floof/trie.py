@@ -4,6 +4,9 @@ class TrieNode:
         self.is_end: bool = False
         self.children: dict = {}
 
+    def is_empty(self):
+        return bool(self.children)
+
 class Trie:
     """
     The Trie data structure basically holds common prefixes. For example, if we insert "apple" and
@@ -37,11 +40,11 @@ class Trie:
     def __iter__(self):
         def recur(node: TrieNode):
             for k, v in node.children.items():
-                if not v.is_end:
+                if v.is_end and not v.is_empty():
                     yield k, v
-                    yield from recur(v)
                 else:
                     yield k, v
+                    yield from recur(v)
 
         return recur(self.root)
 
@@ -49,12 +52,11 @@ class Trie:
         def recur(node: TrieNode):
             dct = {}
             for k, v in node.children.items():
-                if not v.is_end:
-                    dct[k] = recur(v)
-                else:
+                if v.is_end and not v.is_empty():
                     dct[k] = v.children
+                else:
+                    dct[k] = recur(v)
 
             return dct
 
         return recur(self.root)
-        
