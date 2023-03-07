@@ -24,7 +24,7 @@ def benchmark_dictionary():
 
     matcher = floof.Matcher(df1["name1"], df2["name2"])
 
-    cutils.time_func(lambda: matcher.damerau_levenshtein(ncpus=1), warmups=1, iterations=2)
+    cutils.time_func(lambda: matcher.damerau_levenshtein(ncpus=2), warmups=1, iterations=2)
     cutils.time_func(lambda: matcher.damerau_levenshtein_trie(ncpus=1), warmups=1, iterations=2)
 
 def benchmark_real_data():
