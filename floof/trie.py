@@ -40,7 +40,7 @@ class Trie:
     def __iter__(self):
         def recur(node: TrieNode):
             for k, v in node.children.items():
-                if v.is_end and not v.is_empty():
+                if not v.is_empty():
                     yield k, v
                 else:
                     yield k, v
@@ -52,7 +52,7 @@ class Trie:
         def recur(node: TrieNode):
             dct = {}
             for k, v in node.children.items():
-                if v.is_end and not v.is_empty():
+                if not v.is_empty():
                     dct[k] = v.children
                 else:
                     dct[k] = recur(v)
