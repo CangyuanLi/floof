@@ -13,6 +13,7 @@ data.
 
 ## Dependencies
 
+- [fast_distance - Fast C, ascii-only implementation of Hamming and Damerau-Levenshtein]
 - [jarowinkler - Fast implementation of Jaro and Jaro-Winkler algorithms]
 - [jellyfish - Implements many edit distance algorithms, including Damerau-Levenshtein]
 - [Levenshtein - Fast C implementation of Levenshtein distance]
