@@ -3,6 +3,7 @@ class TrieNode:
     def __init__(self):
         self.is_end: bool = False
         self.children: dict = {}
+        self.word = None
 
     def is_empty(self):
         return bool(self.children)
@@ -36,6 +37,7 @@ class Trie:
                 node = child
 
         node.is_end = True
+        node.word = word
 
     def __iter__(self):
         def recur(node: TrieNode):
