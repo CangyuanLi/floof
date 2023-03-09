@@ -17,7 +17,7 @@ data.
 - [jarowinkler - Fast implementation of Jaro and Jaro-Winkler algorithms]
 - [jellyfish - Implements many edit distance algorithms, including Damerau-Levenshtein]
 - [Levenshtein - Fast C implementation of Levenshtein distance]
-- [sklearn - USed to implement TFIDF]
+- [sklearn - Used to implement TFIDF]
 
 ## Installing
 
