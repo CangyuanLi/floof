@@ -27,3 +27,5 @@
 **/*-checkpoint*
 
 **build/
+
+**.prof
