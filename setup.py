@@ -20,7 +20,7 @@ setuptools.setup(
         "Levenshtein",
         "numpy",
         "pandas",
-        "sklearn",
+        "scikit-learn",
         "thefuzz[speedup]",
         "tqdm"
     ],
