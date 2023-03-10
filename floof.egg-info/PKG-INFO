@@ -16,7 +16,7 @@ Description-Content-Type: text/markdown
 
 ## What is it?
 
-**floof** is a pure Python package that makes fuzzymatching easy. Fuzzymatching is a common data task
+**floof** is a Python package that makes fuzzymatching easy. Fuzzymatching is a common data task
 required whenever two strings don't quite exactly match. There are many algorithms to calculate
 string similarity, with dozens of disparate implementations. **floof** aims to collect all of these
 in an easy-to-use package, and reduce the boilerplate needed to apply these algorithms to your
@@ -30,7 +30,7 @@ data.
 - [jarowinkler - Fast implementation of Jaro and Jaro-Winkler algorithms]
 - [jellyfish - Implements many edit distance algorithms, including Damerau-Levenshtein]
 - [Levenshtein - Fast C implementation of Levenshtein distance]
-- [sklearn - USed to implement TFIDF]
+- [sklearn - Used to implement TFIDF]
 
 ## Installing
 
