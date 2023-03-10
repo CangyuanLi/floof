@@ -1,13 +1,22 @@
+astroid==2.15.0
 build==0.10.0
--e git+https://github.com/CangyuanLi/floof.git@886873f8960f0f4b082649409bd3bc61e60c3dbb#egg=floof
+dill==0.3.6
+fast-distance==0.0.0
+floof==0.1.1
+isort==5.12.0
 jarowinkler==1.2.3
 jellyfish==0.9.0
 joblib==1.2.0
+lazy-object-proxy==1.9.0
 Levenshtein==0.20.9
+marisa-trie==0.7.8
+mccabe==0.7.0
 numpy==1.24.2
 packaging==23.0
 pandas==1.5.3
+platformdirs==3.1.0
 pycutils==0.0.8
+pylint==2.16.4
 pyproject_hooks==1.0.0
 python-dateutil==2.8.2
 python-Levenshtein==0.20.9
@@ -17,7 +26,12 @@ scikit-learn==1.2.1
 scipy==1.10.0
 six==1.16.0
 sklearn==0.0.post1
+snakeviz==2.1.1
 thefuzz==0.19.0
 threadpoolctl==3.1.0
 tomli==2.0.1
+tomlkit==0.11.6
+tornado==6.2
 tqdm==4.64.1
+typing_extensions==4.5.0
+wrapt==1.15.0
