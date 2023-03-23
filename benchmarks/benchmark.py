@@ -18,7 +18,7 @@ def main():
     perfplot.save(
         filename=Path(__file__).resolve().parents[0] / "edit_distance_scorers.png",
         setup=lambda n: data_setup(df, n),
-        n_range=[2**k for k in range(10)],
+        n_range=[2**k for k in range(15)],
         kernels=[
             lambda m: m.hamming(),
             lambda m: m.hamming(ascii_only=True),
