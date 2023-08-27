@@ -5,7 +5,6 @@ import jarowinkler
 import jellyfish
 import Levenshtein
 import pandas as pd
-import polars as pl
 import tqdm
 from thefuzz import fuzz
 
@@ -26,8 +25,8 @@ class Comparer:
         normalize: bool = True,
         quiet: bool = False,
     ):
-        self._original = pl.Series(original)
-        self._lookup = pl.Series(lookup)
+        self._original = pd.Series(original)
+        self._lookup = pd.Series(lookup)
         self._quiet = quiet
 
         self._validate()
@@ -39,8 +38,8 @@ class Comparer:
         self._lookup = self._lookup.to_list()
 
     def _validate(self):
-        og_len = self._original.len()
-        lu_len = self._lookup.len()
+        og_len = len(self._original.index)
+        lu_len = len(self._lookup.index)
 
         if og_len == 0 or lu_len == 0:
             raise ValueError("Both series must be non-empty.")
@@ -49,12 +48,12 @@ class Comparer:
             raise ValueError("Column lengths do not match.")
 
         for col in (self._original, self._lookup):
-            if col.dtype != "Utf8":
+            if not pd.api.types.is_string_dtype():
                 raise TypeError(f"Column {col.name} is not string type.")
 
     def _normalize(self):
-        self._original = self._original.str.to_lowercase().fill_null("")
-        self._lookup = self._lookup.str.to_lowercase().fill_null("")
+        self._original = self._original.str.lower().fillna("")
+        self._lookup = self._lookup.str.lower().fillna("")
 
     def _apply_score(
         self, match_func: Callable, scorer: Callable, already_ratio: bool = False
