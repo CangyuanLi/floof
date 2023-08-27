@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import setuptools
 
 long_description = Path("README.md").read_text()
@@ -14,7 +15,6 @@ setuptools.setup(
     url="https://github.com/CangyuanLi/floof",
     packages=["floof"],
     install_requires=[
-        "fast_distance",
         "jarowinkler",
         "jellyfish",
         "Levenshtein",
@@ -22,12 +22,12 @@ setuptools.setup(
         "pandas",
         "scikit-learn",
         "thefuzz[speedup]",
-        "tqdm"
+        "tqdm",
     ],
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent"
-    ]
+        "Operating System :: OS Independent",
+    ],
 )

@@ -6,7 +6,6 @@ import re
 import typing
 from typing import Callable, Literal
 
-import fast_distance
 import jarowinkler
 import jellyfish
 import Levenshtein
@@ -14,8 +13,8 @@ import numpy as np
 import pandas as pd
 import sklearn.feature_extraction.text as sklearn_text
 import sklearn.neighbors
-from thefuzz import fuzz
 import tqdm
+from thefuzz import fuzz
 
 EditDistanceScorers = Literal[
     "damerau_levenshtein",
@@ -31,9 +30,7 @@ EditDistanceScorers = Literal[
     "token_sort_ratio",
 ]
 
-NearestNeighborScorers = Literal[
-    "tfidf",
-]
+NearestNeighborScorers = Literal["tfidf",]
 
 PhoneticScorers = Literal[
     "match_rating_codex",
@@ -44,12 +41,10 @@ PhoneticScorers = Literal[
 
 AllScorers = Literal[EditDistanceScorers, NearestNeighborScorers, PhoneticScorers]
 
+
 # Functions used in both classes
 def _get_score_from_distance(
-    lookup_str: str,
-    original_str: str,
-    original_str_len: int,
-    scorer: Callable
+    lookup_str: str, original_str: str, original_str_len: int, scorer: Callable
 ) -> tuple[float, str, str]:
     dist = scorer(original_str, lookup_str)
 
@@ -61,13 +56,16 @@ def _get_score_from_distance(
 
     return (pct, original_str, lookup_str)
 
-def _get_score(lookup_str: str, original_str: str, scorer: Callable) -> tuple[float, str, str]:
+
+def _get_score(
+    lookup_str: str, original_str: str, scorer: Callable
+) -> tuple[float, str, str]:
     pct = scorer(original_str, lookup_str)
 
     return (pct, original_str, lookup_str)
 
-class Comparer:
 
+class Comparer:
     def __init__(self, original: pd.Series, lookup: pd.Series):
         self._original = original
         self._lookup = lookup
@@ -88,7 +86,9 @@ class Comparer:
             if not pd.api.types.is_string_dtype(col):
                 raise TypeError(f"Column {col.name} is not string type.")
 
-    def _get_score_from_distance(self, o_str: str, lu_str: str, scorer: Callable) -> float:
+    def _get_score_from_distance(
+        self, o_str: str, lu_str: str, scorer: Callable
+    ) -> float:
         if o_str == "" or lu_str == "":
             return (0, o_str, lu_str)
 
@@ -100,14 +100,11 @@ class Comparer:
         return _get_score(o_str, lu_str, scorer)
 
     def _apply_score(
-        self,
-        match_func: Callable,
-        scorer: Callable,
-        already_ratio: bool=False
+        self, match_func: Callable, scorer: Callable, already_ratio: bool = False
     ) -> pd.Series:
-        original = self._original.to_list() # faster to iterate over list
-        lookup = self._lookup.to_list() 
-        
+        original = self._original.to_list()  # faster to iterate over list
+        lookup = self._lookup.to_list()
+
         score_lst = []
         with tqdm.tqdm(total=len(self._original.index)) as pbar:
             for o_str, lu_str in zip(original, lookup):
@@ -117,7 +114,7 @@ class Comparer:
                 pbar.update(1)
 
         res = pd.Series(score_lst)
-        
+
         if already_ratio:
             return res
 
@@ -128,73 +125,61 @@ class Comparer:
     def damerau_levenshtein(self) -> pd.Series:
         return self._apply_score(
             match_func=self._get_score_from_distance,
-            scorer=jellyfish.damerau_levenshtein_distance
+            scorer=jellyfish.damerau_levenshtein_distance,
         )
 
     def levenshtein(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score_from_distance,
-            scorer=Levenshtein.distance
+            match_func=self._get_score_from_distance, scorer=Levenshtein.distance
         )
 
     def hamming(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score_from_distance,
-            scorer=jellyfish.hamming_distance
+            match_func=self._get_score_from_distance, scorer=jellyfish.hamming_distance
         )
 
     def jaro_winkler(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score,
-            scorer=jarowinkler.jarowinkler_similarity
+            match_func=self._get_score, scorer=jarowinkler.jarowinkler_similarity
         )
 
     def jaro(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score,
-            scorer=jarowinkler.jaro_similarity
+            match_func=self._get_score, scorer=jarowinkler.jaro_similarity
         )
 
     def ratio(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score,
-            scorer=fuzz.ratio,
-            already_ratio=True
+            match_func=self._get_score, scorer=fuzz.ratio, already_ratio=True
         )
 
     def partial_ratio(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score,
-            scorer=fuzz.partial_ratio,
-            already_ratio=True
+            match_func=self._get_score, scorer=fuzz.partial_ratio, already_ratio=True
         )
 
     def token_sort_ratio(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score,
-            scorer=fuzz.token_sort_ratio,
-            already_ratio=True
+            match_func=self._get_score, scorer=fuzz.token_sort_ratio, already_ratio=True
         )
 
     def token_set_ratio(self) -> pd.Series:
         return self._apply_score(
-            match_func=self._get_score,
-            scorer=fuzz.token_set_ratio,
-            already_ratio=True
+            match_func=self._get_score, scorer=fuzz.token_set_ratio, already_ratio=True
         )
 
     def partial_token_set_ratio(self) -> pd.Series:
         return self._apply_score(
             match_func=self._get_score,
             scorer=fuzz.partial_token_set_ratio,
-            already_ratio=True
+            already_ratio=True,
         )
 
     def partial_token_sort_ratio(self) -> pd.Series:
         return self._apply_score(
             match_func=self._get_score,
             scorer=fuzz.partial_token_sort_ratio,
-            already_ratio=True
+            already_ratio=True,
         )
 
     def _dispatcher(self, func_name: str) -> Callable:
@@ -215,21 +200,20 @@ class Comparer:
         return func_mapper[func_name]
 
     def compare(
-        self, 
-        scorers: EditDistanceScorers=None, 
-        weights: list[int | float]=None,
-        drop_intermediate: bool=True
+        self,
+        scorers: EditDistanceScorers = None,
+        weights: list[int | float] = None,
+        drop_intermediate: bool = True,
     ) -> pd.Series | pd.DataFrame:
-
         # Define scorers and weights
         if weights is None and scorers is None:
             default_scorers = {
-                "damerau_levenshtein": 1, 
-                "jaro": .9, 
-                "jaro_winkler": 1, 
-                "levenshtein": .9,
-                "partial_ratio": .5,
-                "token_sort_ratio": .6,
+                "damerau_levenshtein": 1,
+                "jaro": 0.9,
+                "jaro_winkler": 1,
+                "levenshtein": 0.9,
+                "partial_ratio": 0.5,
+                "token_sort_ratio": 0.6,
             }
             scorers = default_scorers.keys()
             weights = default_scorers.values()
@@ -240,9 +224,9 @@ class Comparer:
             raise ValueError("Number of scorers and weights must match.")
 
         sum_w = sum(weights)
-        weights = [w / sum_w for w in weights] # normalize to 1
+        weights = [w / sum_w for w in weights]  # normalize to 1
         scorer_dict = {s: w for s, w in zip(scorers, weights)}
-        
+
         scores = dict()
         for func_nm, weight in scorer_dict.items():
             func = self._dispatcher(func_nm)
@@ -256,8 +240,8 @@ class Comparer:
 
         return df
 
-class Matcher:
 
+class Matcher:
     def __init__(self, original: pd.Series, lookup: pd.Series) -> None:
         if original.name == lookup.name:
             raise ValueError("Series names must not match.")
@@ -279,11 +263,7 @@ class Matcher:
 
     @staticmethod
     def _dedupe(series: pd.Series) -> pd.Series:
-        series = (
-            series.drop_duplicates()
-                  .replace({"": pd.NA})
-                  .dropna()
-        )
+        series = series.drop_duplicates().replace({"": pd.NA}).dropna()
 
         return series
 
@@ -295,7 +275,7 @@ class Matcher:
         return df
 
     @staticmethod
-    def get_ngrams(string: str, n: int=3, strip_punc: bool=True) -> list[str]:
+    def get_ngrams(string: str, n: int = 3, strip_punc: bool = True) -> list[str]:
         if strip_punc:
             pattern = re.compile(r"[,-./]|\sBD")
             string = re.sub(pattern, "", string)
@@ -304,11 +284,11 @@ class Matcher:
 
         return ["".join(ngram) for ngram in ngrams]
 
-    def tfidf(self, k_matches: int=None, threshold: int=0, ngram_length: int=3):
+    def tfidf(self, k_matches: int = None, threshold: int = 0, ngram_length: int = 3):
         original = self._original.to_list()
         lookup = self._lookup.to_list()
 
-        def ngrams_user(string: str, n: int=ngram_length) -> str:
+        def ngrams_user(string: str, n: int = ngram_length) -> str:
             return self.get_ngrams(string, n)
 
         vectorizer = sklearn_text.TfidfVectorizer(min_df=1, analyzer=ngrams_user)
@@ -318,9 +298,7 @@ class Matcher:
             k_matches = min(len(original), len(lookup))
 
         nbrs = sklearn.neighbors.NearestNeighbors(
-            n_neighbors=k_matches,
-            n_jobs=-1,
-            metric="cosine"
+            n_neighbors=k_matches, n_jobs=-1, metric="cosine"
         ).fit(tf_idf_lookup)
 
         tf_idf_original = vectorizer.transform(original)
@@ -343,7 +321,7 @@ class Matcher:
             {
                 self._original.name: original_name_list,
                 self._lookup.name: lookup_list,
-                "score": confidence_list
+                "score": confidence_list,
             }
         )
 
@@ -355,7 +333,7 @@ class Matcher:
             right=self._lookup,
             how="inner",
             left_on=self._original.name,
-            right_on=self._lookup.name
+            right_on=self._lookup.name,
         )
         final["score"] = 100
 
@@ -368,12 +346,7 @@ class Matcher:
         original = pd.concat([original_soundex, self._original], axis=1)
         lookup = pd.concat([lookup_soundex, self._lookup], axis=1)
 
-        merged = pd.merge(
-            left=original,
-            right=lookup,
-            how="inner",
-            on=name
-        )
+        merged = pd.merge(left=original, right=lookup, how="inner", on=name)
         merged["score"] = 100
         merged.drop(columns=[name], inplace=True)
 
@@ -392,24 +365,19 @@ class Matcher:
         return self._phonetic_match(jellyfish.match_rating_codex, "mr_codex")
 
     def _get_matches_distance(
-        self, 
-        o_str: str, 
-        lookup: list[str], 
-        scorer: Callable, 
-        k_matches: int
+        self, o_str: str, lookup: list[str], scorer: Callable, k_matches: int
     ) -> list[tuple]:
         o_str_len = len(o_str)
-        matches = [_get_score_from_distance(lu_str, o_str, o_str_len, scorer) for lu_str in lookup]
+        matches = [
+            _get_score_from_distance(lu_str, o_str, o_str_len, scorer)
+            for lu_str in lookup
+        ]
         matches = heapq.nlargest(k_matches, matches)
 
         return matches
 
     def _get_matches_pct(
-        self, 
-        o_str: str, 
-        lookup: list[str], 
-        scorer: Callable, 
-        k_matches: int
+        self, o_str: str, lookup: list[str], scorer: Callable, k_matches: int
     ) -> list[tuple]:
         matches = [_get_score(lu_str, o_str, scorer) for lu_str in lookup]
         matches = heapq.nlargest(k_matches, matches)
@@ -420,21 +388,21 @@ class Matcher:
         self,
         match_func: Callable,
         scorer: Callable,
-        k_matches: int, 
+        k_matches: int,
         threshold: int,
-        already_ratio: bool=False,
-        ncpus: int=None
+        already_ratio: bool = False,
+        ncpus: int = None,
     ) -> pd.DataFrame:
-        original = self._original.to_list() # faster to iterate over list
-        lookup = self._lookup.to_list() 
-        
+        original = self._original.to_list()  # faster to iterate over list
+        lookup = self._lookup.to_list()
+
         og_colname = self._original.name
         lu_colname = self._lookup.name
 
         merged = {og_colname: [], lu_colname: [], "score": []}
 
         with tqdm.tqdm(total=len(self._original.index)) as pbar:
-            if ncpus == 1: # this is just single-threading
+            if ncpus == 1:  # this is just single-threading
                 for o_str in original:
                     matches = match_func(o_str, lookup, scorer, k_matches)
                     for score, o_str, lu_str in matches:
@@ -446,8 +414,8 @@ class Matcher:
             else:
                 with concurrent.futures.ProcessPoolExecutor(ncpus) as pool:
                     futures = [
-                        pool.submit(match_func, o_str, lookup, scorer, k_matches) \
-                            for o_str in original
+                        pool.submit(match_func, o_str, lookup, scorer, k_matches)
+                        for o_str in original
                     ]
                     for future in concurrent.futures.as_completed(futures):
                         matches = future.result()
@@ -459,137 +427,147 @@ class Matcher:
                         pbar.update(1)
 
         merged = pd.DataFrame(merged)
-        
+
         if already_ratio:
             merged["score"] = merged["score"] / 100
 
         return self._clean_and_filter(merged, threshold)
 
     def damerau_levenshtein(
-        self, 
-        k_matches: int=5, 
-        threshold: int=80, 
-        ncpus: int=None,
-        ascii_only: bool=False
+        self,
+        k_matches: int = 5,
+        threshold: int = 80,
+        ncpus: int = None,
     ) -> pd.DataFrame:
-        if ascii_only:
-            scorer = fast_distance.damerau_levenshtein_distance
-        else:
-            scorer = jellyfish.damerau_levenshtein_distance
-
-        return self._get_all_matches(
-            match_func=self._get_matches_distance,
-            scorer=scorer,
-            k_matches=k_matches, 
-            threshold=threshold,
-            ncpus=ncpus
-        )
-
-    def levenshtein(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
-        return self._get_all_matches(
-            match_func=self._get_matches_distance,
-            scorer=Levenshtein.distance,
-            k_matches=k_matches, 
-            threshold=threshold,
-            ncpus=ncpus
-        )
-
-    def hamming(
-        self, 
-        k_matches: int=5, 
-        threshold: int=80, 
-        ncpus: int=None, 
-        ascii_only: bool=True
-    ) -> pd.DataFrame:
-        if ascii_only:
-            scorer = fast_distance.hamming_distance
-        else:
-            scorer = jellyfish.hamming_distance
+        scorer = jellyfish.damerau_levenshtein_distance
 
         return self._get_all_matches(
             match_func=self._get_matches_distance,
             scorer=scorer,
             k_matches=k_matches,
             threshold=threshold,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def jaro_winkler(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def levenshtein(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
+        return self._get_all_matches(
+            match_func=self._get_matches_distance,
+            scorer=Levenshtein.distance,
+            k_matches=k_matches,
+            threshold=threshold,
+            ncpus=ncpus,
+        )
+
+    def hamming(
+        self,
+        k_matches: int = 5,
+        threshold: int = 80,
+        ncpus: int = None,
+    ) -> pd.DataFrame:
+        scorer = jellyfish.hamming_distance
+
+        return self._get_all_matches(
+            match_func=self._get_matches_distance,
+            scorer=scorer,
+            k_matches=k_matches,
+            threshold=threshold,
+            ncpus=ncpus,
+        )
+
+    def jaro_winkler(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=jarowinkler.jarowinkler_similarity,
             k_matches=k_matches,
             threshold=threshold,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def jaro(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def jaro(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=jarowinkler.jaro_similarity,
             k_matches=k_matches,
             threshold=threshold,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def ratio(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def ratio(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=fuzz.ratio,
             k_matches=k_matches,
             threshold=threshold,
             already_ratio=True,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def partial_ratio(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def partial_ratio(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=fuzz.partial_ratio,
             k_matches=k_matches,
             threshold=threshold,
             already_ratio=True,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def token_sort_ratio(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def token_sort_ratio(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=fuzz.token_sort_ratio,
             k_matches=k_matches,
             threshold=threshold,
             already_ratio=True,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def token_set_ratio(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def token_set_ratio(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=fuzz.token_set_ratio,
             k_matches=k_matches,
             threshold=threshold,
             already_ratio=True,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def partial_token_set_ratio(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def partial_token_set_ratio(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=fuzz.partial_token_set_ratio,
             k_matches=k_matches,
             threshold=threshold,
             already_ratio=True,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
-    def partial_token_sort_ratio(self, k_matches: int=5, threshold: int=80, ncpus: int=None) -> pd.DataFrame:
+    def partial_token_sort_ratio(
+        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
+    ) -> pd.DataFrame:
         return self._get_all_matches(
             match_func=self._get_matches_pct,
             scorer=fuzz.partial_token_sort_ratio,
             k_matches=k_matches,
             threshold=threshold,
             already_ratio=True,
-            ncpus=ncpus
+            ncpus=ncpus,
         )
 
     def _dispatcher(self, func_name: str) -> Callable:
@@ -616,15 +594,15 @@ class Matcher:
 
     def match(
         self,
-        scorers: AllScorers=None,
-        weights: list[int | float]=None,
-        k_matches: int=5,
-        threshold: int=80,
-        filter: bool=True,
-        filter_k_matches: int=20,
-        filter_threshold: int=50,
-        drop_intermediate: bool=True,
-        ncpus: int=None,
+        scorers: AllScorers = None,
+        weights: list[int | float] = None,
+        k_matches: int = 5,
+        threshold: int = 80,
+        filter: bool = True,
+        filter_k_matches: int = 20,
+        filter_threshold: int = 50,
+        drop_intermediate: bool = True,
+        ncpus: int = None,
     ) -> pd.DataFrame:
         """
         A convenience function to iterate through multiple different matching algorithms and
@@ -632,7 +610,7 @@ class Matcher:
 
         Args:
             scorers (AllScorers, optional): Defaults to None.
-                A list of scorers to use. 
+                A list of scorers to use.
                 The available scorers are:
                     'damerau_levenshtein'
                     'hamming'
@@ -651,22 +629,22 @@ class Matcher:
                     'nysiis'
                     'soundex'
             weights (list[int  |  float], optional): Defaults to None.
-                How much to weigh each algorithm. 
+                How much to weigh each algorithm.
             k_matches (int, optional): Defaults to 5.
-                Up to how many matches should be returned. 
+                Up to how many matches should be returned.
             threshold (int, optional): Defaults to 80.
                 Keep only matches above this score. Note that this applies only to the FINAL
                 calculated score. This is because if it applied at each individual step, information
                 would be lost. For example, a Hamming score of 79 provides more information than
                 a Hamming score of 60, but both would be set to 0 if it applied to each individual
-                step. 
+                step.
             filter (bool, optional): Defaults to True.
-                If True, uses TFIDF to filter out unlikely matches. 
+                If True, uses TFIDF to filter out unlikely matches.
             filter_threshold (int, optional): Defaults to 50.
-                Threshold to use for the TFIDF filter. 
-            drop_intermediate (bool, optional): Defaults to True. 
-                Drop intermediate columns, keeping only the final calculated score. 
-                
+                Threshold to use for the TFIDF filter.
+            drop_intermediate (bool, optional): Defaults to True.
+                Drop intermediate columns, keeping only the final calculated score.
+
         Raises:
             ValueError: If the number of scorers and weights don't match.
             ValueError: If there are no valid lookups.
@@ -688,11 +666,11 @@ class Matcher:
         # Define scorers and weights
         if weights is None and scorers is None:
             default_scorers = {
-                "damerau_levenshtein": 1, 
-                "jaro": .9, 
-                "jaro_winkler": 1, 
-                "levenshtein": .9,
-                "tfidf": .8
+                "damerau_levenshtein": 1,
+                "jaro": 0.9,
+                "jaro_winkler": 1,
+                "levenshtein": 0.9,
+                "tfidf": 0.8,
             }
             scorers = default_scorers.keys()
             weights = default_scorers.values()
@@ -703,7 +681,7 @@ class Matcher:
             raise ValueError("Number of scorers and weights must match.")
 
         sum_w = sum(weights)
-        weights = [w / sum_w for w in weights] # normalize to 1
+        weights = [w / sum_w for w in weights]  # normalize to 1
         scorers_dict = {s: w for s, w in zip(scorers, weights)}
 
         # Start with an exact match
@@ -719,7 +697,9 @@ class Matcher:
             # Use tfidf match, getting max number of neighbors, and applying a generous default
             # threshold of 50
             try:
-                tfidf = self.tfidf(k_matches=filter_k_matches, threshold=filter_threshold)
+                tfidf = self.tfidf(
+                    k_matches=filter_k_matches, threshold=filter_threshold
+                )
             except ValueError:
                 tfidf = self.tfidf(k_matches=None, threshold=filter_threshold)
 
@@ -750,7 +730,7 @@ class Matcher:
                 else:
                     # With nearest neighbor, k_matches is not UP to k_matches, it is that number of
                     # neighbors exactly, which can cause the algorithm to error. If this happens, it
-                    # is likely that user wants up to k_matches, so try again with the "None" 
+                    # is likely that user wants up to k_matches, so try again with the "None"
                     # option, which sets k_matches to the maximum possible value.
                     try:
                         df = func(k_matches=k_matches, threshold=0)
@@ -765,7 +745,7 @@ class Matcher:
             df = df.rename(
                 columns={
                     "score": f"{scorer_nm}_score",
-                    "score_adj": f"{scorer_nm}_score_adj"
+                    "score_adj": f"{scorer_nm}_score_adj",
                 }
             )
             score_cols.append(f"{scorer_nm}_score_adj")
@@ -773,13 +753,15 @@ class Matcher:
             final = pd.merge(
                 left=final,
                 right=df,
-                how="outer", # keep both since different algs may return different matches
-                on=[og_colname, lu_colname]
+                how="outer",  # keep both since different algs may return different matches
+                on=[og_colname, lu_colname],
             )
 
         # Finally, calculate the score
         final["final_score"] = final[score_cols].sum(axis=1, skipna=True)
-        final["final_score"] = np.where(final["exact_score"] == 100, 100, final["final_score"])
+        final["final_score"] = np.where(
+            final["exact_score"] == 100, 100, final["final_score"]
+        )
         final = final.loc[final["final_score"] >= threshold]
 
         if drop_intermediate:
