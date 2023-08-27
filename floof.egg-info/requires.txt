@@ -1,9 +1,0 @@
-fast_distance
-jarowinkler
-jellyfish
-Levenshtein
-numpy
-pandas
-scikit-learn
-thefuzz[speedup]
-tqdm
