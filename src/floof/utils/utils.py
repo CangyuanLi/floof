@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable
 
 
@@ -38,3 +39,13 @@ def _normalize(lst: list[float]) -> list[float]:
     sum_ = sum(lst)
 
     return [x / sum_ for x in lst]
+
+
+def _get_ngrams(string: str, n: int = 3, strip_punc: bool = True) -> list[str]:
+    if strip_punc:
+        pattern = re.compile(r"[,-./]|\sBD")
+        string = re.sub(pattern, "", string)
+
+    ngrams = zip(*[string[i:] for i in range(n)])
+
+    return ["".join(ngram) for ngram in ngrams]
