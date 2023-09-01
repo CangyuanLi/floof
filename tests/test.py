@@ -1,10 +1,8 @@
-import floof
 import pandas as pd
 
-data = {
-    "name1": ["janice", "apple", "bordula"],
-    "name2": ["janic", "appil", "bordula"]
-}
+import floof
+
+data = {"name1": ["janice", "apple", "bordula"], "name2": ["janic", "appil", "bordula"]}
 
 df = pd.DataFrame(data)
 lu = df["name2"]
