@@ -483,8 +483,8 @@ class Matcher:
 
         # Filter using tfidf
         if filter:
-            # Use tfidf match, getting max number of neighbors, and applying a generous default
-            # threshold of 50
+            # Use tfidf match, getting max number of neighbors, and applying a generous
+            # default threshold of 50
             try:
                 tfidf = self.tfidf(
                     k_matches=filter_k_matches, threshold=filter_threshold
@@ -543,7 +543,7 @@ class Matcher:
             final = pd.merge(
                 left=final,
                 right=df,
-                how="outer",  # keep both since different algs may return different matches
+                how="outer",  # keep both since diff algs may return diff matches
                 on=[og_colname, lu_colname],
             )
 
