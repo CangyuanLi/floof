@@ -22,7 +22,6 @@ class Comparer:
         self,
         original: ArrayLike,
         lookup: ArrayLike,
-        normalize: bool = True,
         quiet: bool = False,
     ):
         self._original = pd.Series(original)
@@ -30,9 +29,7 @@ class Comparer:
         self._quiet = quiet
 
         self._validate()
-
-        if normalize:
-            self._normalize()
+        self._normalize()
 
         self._original = self._original.to_list()
         self._lookup = self._lookup.to_list()
@@ -48,18 +45,18 @@ class Comparer:
             raise ValueError("Column lengths do not match.")
 
         for col in (self._original, self._lookup):
-            if not pd.api.types.is_string_dtype():
+            if not pd.api.types.is_string_dtype(col):
                 raise TypeError(f"Column {col.name} is not string type.")
 
     def _normalize(self):
-        self._original = self._original.str.lower().fillna("")
-        self._lookup = self._lookup.str.lower().fillna("")
+        self._original = self._original.fillna("")
+        self._lookup = self._lookup.fillna("")
 
     def _apply_score(
         self, match_func: Callable, scorer: Callable, already_ratio: bool = False
     ) -> list[float]:
         score_lst = []
-        with tqdm.tqdm(total=len(self._original.index), disable=self._quiet) as pbar:
+        with tqdm.tqdm(total=len(self._original), disable=self._quiet) as pbar:
             for o_str, lu_str in zip(self._original, self._lookup):
                 score, _, _ = match_func(o_str, lu_str, scorer)
                 score_lst.append(score)
@@ -202,12 +199,12 @@ class Comparer:
         scores = dict()
         for func_nm, weight in scorer_dict.items():
             func = self._dispatcher(func_nm)
-            scores[f"{func_nm}_score"] = func() * weight
+            scores[f"{func_nm}_score"] = [i * weight for i in func()]
 
         df = pd.DataFrame(scores)
         df["final_score"] = df[list(scores.keys())].sum(axis=1, skipna=True)
 
         if drop_intermediate:
-            return df["final_score"]
+            return df["final_score"].to_list()
 
         return df
