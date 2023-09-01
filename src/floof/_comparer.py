@@ -8,7 +8,7 @@ import pandas as pd
 import tqdm
 from thefuzz import fuzz
 
-from .utils.types import ArrayLike, EditDistanceScorers, PhoneticScorers
+from .utils.types import EditDistanceScorers, PhoneticScorers
 from .utils.utils import (
     _get_score,
     _get_score_from_distance,
@@ -20,8 +20,8 @@ from .utils.utils import (
 class Comparer:
     def __init__(
         self,
-        original: ArrayLike,
-        lookup: ArrayLike,
+        original,
+        lookup,
         quiet: bool = False,
     ):
         self._original = pd.Series(original)

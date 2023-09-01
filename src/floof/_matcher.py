@@ -15,7 +15,6 @@ from thefuzz import fuzz
 
 from .utils.types import (
     AllScorers,
-    ArrayLike,
     EditDistanceScorers,
     NearestNeighborScorers,
     PhoneticScorers,
@@ -24,7 +23,7 @@ from .utils.utils import _get_ngrams, _get_score, _get_score_from_distance, _nor
 
 
 class Matcher:
-    def __init__(self, original: ArrayLike, lookup: ArrayLike, quiet: bool = False):
+    def __init__(self, original, lookup, quiet: bool = False):
         self._original = pd.Series(original)
         self._lookup = pd.Series(lookup)
         self._quiet = quiet
