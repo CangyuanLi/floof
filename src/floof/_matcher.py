@@ -72,8 +72,10 @@ class Matcher:
         original = self._original_list
         lookup = self._lookup_list
 
-        def ngrams_user(string: str, n: int = ngram_length) -> str:
-            return _get_ngrams(string, n)
+        def ngrams_user(string: str, n: int = ngram_length) -> list[str]:
+            ngrams = zip(*[string[i:] for i in range(n)])
+
+            return ["".join(ngram) for ngram in ngrams]
 
         vectorizer = sklearn_text.TfidfVectorizer(min_df=1, analyzer=ngrams_user)
         tf_idf_lookup = vectorizer.fit_transform(lookup)
