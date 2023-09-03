@@ -174,7 +174,7 @@ class Comparer:
         scorers: Union[EditDistanceScorers, PhoneticScorers] = None,
         weights: list[float] = None,
         drop_intermediate: bool = True,
-    ) -> pd.Series | pd.DataFrame:
+    ) -> list[float] | pd.DataFrame:
         # Define scorers and weights
         if weights is None and scorers is None:
             default_scorers = {
