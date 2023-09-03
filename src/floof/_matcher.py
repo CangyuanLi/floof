@@ -19,7 +19,7 @@ from .utils.types import (
     NearestNeighborScorers,
     PhoneticScorers,
 )
-from .utils.utils import _get_ngrams, _get_score, _get_score_from_distance, _normalize
+from .utils.utils import _get_score, _get_score_from_distance, _normalize
 
 
 class Matcher:
