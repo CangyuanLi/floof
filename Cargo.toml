@@ -1,0 +1,27 @@
+[package]
+name = "floof"
+version = "0.1.5"
+edition = "2021"
+description = "A library for fuzzymatching"
+authors = ["Cangyuan Li"]
+repository = "https://github.com/cangyuanli/floof/"
+license = "MIT"
+readme = "README.md"
+
+
+[lib]
+name = "floof"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.19.2"
+unicode-segmentation = "^1.6.0"
+unicode-normalization = "^0.1"
+smallvec = "1.10.0"
+ahash = "0.8.3"
+
+[dev-dependencies]
+csv = "1.1"
+
+[features]
+python = []
