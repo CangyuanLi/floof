@@ -1,7 +1,7 @@
 use crate::utils;
 use unicode_segmentation::UnicodeSegmentation;
 
-fn hamming_percent<T>(iter1: T, iter2: T) -> f64
+fn hamming_similarity<T>(iter1: T, iter2: T) -> f64
 where
     T: utils::HasLength + IntoIterator,
     T::Item: PartialEq,
@@ -15,21 +15,21 @@ where
         }
     }
 
-    utils::distance_to_percent(dist, len1, len2)
+    utils::distance_to_similarity(dist, len1, len2)
 }
 
 pub fn hamming(s1: &str, s2: &str) -> f64 {
     let us1 = UnicodeSegmentation::graphemes(s1, true).collect::<utils::FastVec<&str>>();
     let us2 = UnicodeSegmentation::graphemes(s2, true).collect::<utils::FastVec<&str>>();
 
-    hamming_percent(us1, us2)
+    hamming_similarity(us1, us2)
 }
 
 pub fn hamming_ascii(s1: &str, s2: &str) -> f64 {
     let s1 = s1.as_bytes();
     let s2 = s2.as_bytes();
 
-    hamming_percent(s1, s2)
+    hamming_similarity(s1, s2)
 }
 
 #[cfg(test)]

@@ -20,7 +20,7 @@ impl<T> HasLength for &[T] {
     }
 }
 
-pub fn distance_to_percent(distance: usize, len1: usize, len2: usize) -> f64 {
+pub fn distance_to_similarity(distance: usize, len1: usize, len2: usize) -> f64 {
     let max_len = std::cmp::max(len1, len2);
     let max_len = max_len as f64;
     let dist = distance as f64;
