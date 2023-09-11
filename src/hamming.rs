@@ -19,8 +19,8 @@ where
 }
 
 pub fn hamming(s1: &str, s2: &str) -> f64 {
-    let us1 = UnicodeSegmentation::graphemes(s1, true).collect::<utils::FastVec<&str>>();
-    let us2 = UnicodeSegmentation::graphemes(s2, true).collect::<utils::FastVec<&str>>();
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
 
     hamming_similarity(us1, us2)
 }
