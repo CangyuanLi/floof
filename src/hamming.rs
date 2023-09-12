@@ -8,7 +8,7 @@ where
 {
     let len1 = iter1.len();
     let len2 = iter2.len();
-    let mut dist = len1 - len2;
+    let mut dist = len1.abs_diff(len2);
     for (x, y) in std::iter::zip(iter1, iter2) {
         if x != y {
             dist += 1;
@@ -46,7 +46,7 @@ mod test {
     #[test]
     fn test_hamming_ascii() {
         let s1 = "abc";
-        let s2 = "def";
+        let s2 = "asldfja;lfdjlkj";
         dbg!(hamming_ascii(s1, s2));
     }
 }
