@@ -55,5 +55,3 @@ pub fn create_rayon_pool(num_threads: usize) -> Result<rayon::ThreadPool, FloofE
         Ok(pool) => Ok(pool),
     }
 }
-
-pub fn resolve_njobs(n_jobs: i32) {}
