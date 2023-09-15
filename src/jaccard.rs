@@ -1,6 +1,4 @@
 use std::hash::Hash;
-
-use ahash;
 use unicode_segmentation::UnicodeSegmentation;
 
 fn jaccard_similarity<T: PartialEq + Hash + Eq>(
