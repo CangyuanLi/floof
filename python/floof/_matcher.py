@@ -13,6 +13,7 @@ import sklearn.neighbors
 import tqdm
 from thefuzz import fuzz
 
+from ._rustyfloof import _match
 from .utils.types import (
     AllScorers,
     EditDistanceScorers,
@@ -23,9 +24,18 @@ from .utils.utils import _get_score, _get_score_from_distance, _normalize
 
 
 class Matcher:
-    def __init__(self, original, lookup, quiet: bool = False):
+    def __init__(
+        self,
+        original,
+        lookup,
+        ascii_only: bool = False,
+        n_jobs: int = -1,
+        quiet: bool = False,
+    ):
         self._original = pd.Series(original)
         self._lookup = pd.Series(lookup)
+        self._n_jobs = 0 if n_jobs == -1 else n_jobs
+        self._ascii_only = ascii_only
         self._quiet = quiet
 
         self._set_names()
@@ -221,6 +231,21 @@ class Matcher:
 
         return self._clean_and_filter(merged, threshold)
 
+    def _get_all_matches_rust(
+        self, scorer: str, k_matches: int, threshold: float
+    ) -> pd.DataFrame:
+        return pd.DataFrame(
+            _match(
+                self._original_list,
+                self._lookup_list,
+                scorer,
+                k_matches,
+                threshold,
+                self._n_jobs,
+            ),
+            columns=["score", self._original.name, self._lookup.name],
+        )
+
     def damerau_levenshtein(
         self,
         k_matches: int = 5,
@@ -249,18 +274,16 @@ class Matcher:
     def hamming(
         self,
         k_matches: int = 5,
-        threshold: int = 80,
-        ncpus: int = None,
+        threshold: float = 0,
     ) -> pd.DataFrame:
-        scorer = jellyfish.hamming_distance
+        scorer = "hamming_ascii" if self._ascii_only else "hamming"
 
-        return self._get_all_matches(
-            match_func=self._get_matches_distance,
-            scorer=scorer,
-            k_matches=k_matches,
-            threshold=threshold,
-            ncpus=ncpus,
-        )
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
+
+    def jaccard(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+        scorer = "jaccard_ascii" if self._ascii_only else "jaccard"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
 
     def jaro_winkler(
         self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
