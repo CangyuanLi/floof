@@ -8,6 +8,7 @@ import pandas as pd
 import tqdm
 from thefuzz import fuzz
 
+from ._rustyfloof import _compare
 from .utils.types import EditDistanceScorers, PhoneticScorers
 from .utils.utils import (
     _get_score,
@@ -22,10 +23,14 @@ class Comparer:
         self,
         original,
         lookup,
+        ascii_only: bool = False,
+        n_jobs: int = 1,
         quiet: bool = False,
     ):
         self._original = pd.Series(original)
         self._lookup = pd.Series(lookup)
+        self._ascii_only = ascii_only
+        self._n_jobs = 0 if n_jobs == -1 else n_jobs
         self._quiet = quiet
 
         self._validate()
@@ -68,6 +73,11 @@ class Comparer:
 
         return [i * 100 for i in score_lst]
 
+    def jaccard(self) -> list[float]:
+        scorer = "jaccard_ascii" if self._ascii_only else "jaccard"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
+
     def damerau_levenshtein(self) -> list[float]:
         return self._apply_score(
             match_func=_get_score_from_distance,
@@ -80,9 +90,9 @@ class Comparer:
         )
 
     def hamming(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score_from_distance, scorer=jellyfish.hamming_distance
-        )
+        scorer = "hamming_ascii" if self._ascii_only else "hamming"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def jaro_winkler(self) -> list[float]:
         return self._apply_score(
@@ -90,9 +100,9 @@ class Comparer:
         )
 
     def jaro(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score, scorer=jarowinkler.jaro_similarity
-        )
+        scorer = "jaro_ascii" if self._ascii_only else "jaro"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def ratio(self) -> list[float]:
         return self._apply_score(
