@@ -1,7 +1,10 @@
 use pyo3::exceptions::PyException;
+use pyo3::pyclass;
 use smallvec::SmallVec;
 use thiserror::Error;
 
+/// A custom Error for this crate, mainly so we can convert easily from a Rust error to
+/// a Python expection.
 #[derive(Error, Debug)]
 pub enum FloofError {
     #[error(transparent)]
@@ -38,6 +41,55 @@ impl<T> HasLength for &[T] {
     }
 }
 
+#[pyclass]
+#[derive(Debug)]
+pub struct Score {
+    pub similarity: f64,
+    pub str1: String,
+    pub str2: String,
+}
+
+impl Ord for Score {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (self.similarity).total_cmp(&other.similarity)
+    }
+}
+
+impl PartialOrd for Score {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Score {
+    fn eq(&self, other: &Self) -> bool {
+        self.similarity == other.similarity
+    }
+}
+
+impl Eq for Score {}
+
+pub type ScoreTuple = (f64, String, String);
+
+impl From<Score> for ScoreTuple {
+    fn from(e: Score) -> ScoreTuple {
+        let Score {
+            similarity,
+            str1,
+            str2,
+        } = e;
+        (similarity, str1, str2)
+    }
+}
+
+/// Returns a f64 that is the distance scaled by the max length of the two strings.
+/// The formula is (max_len - dist) / max_len.
+///
+/// # Arguments
+///
+/// * `distance` - The edit distance between two strings, e.g. a Hamming distance
+/// * `len1` - The length of the first string
+/// * `len2` - The length of the second string
 pub fn distance_to_similarity(distance: usize, len1: usize, len2: usize) -> f64 {
     let max_len = std::cmp::max(len1, len2);
     let max_len = max_len as f64;
@@ -46,6 +98,13 @@ pub fn distance_to_similarity(distance: usize, len1: usize, len2: usize) -> f64 
     (max_len - dist) / max_len
 }
 
+/// Returns a Result where the error is a Rayon::ThreadPoolBuildError (converted to a
+/// Floof::ThreadPoolError) and the success is a thread pool with the requested number
+/// of threads.
+///
+/// # Arguments
+///
+/// * `num_threads` - Number of threads in the pool
 pub fn create_rayon_pool(num_threads: usize) -> Result<rayon::ThreadPool, FloofError> {
     match rayon::ThreadPoolBuilder::new()
         .num_threads(num_threads)
