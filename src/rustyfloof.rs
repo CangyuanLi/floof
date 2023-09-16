@@ -1,6 +1,7 @@
 use crate::comparer::{fuzzycompare, fuzzycompare_sequential};
 use crate::hamming as _hamming;
 use crate::jaccard as _jaccard;
+use crate::matcher::{fuzzymatch, fuzzymatch_sequential};
 use crate::utils;
 use phf::phf_map;
 use pyo3::exceptions::*;
@@ -11,27 +12,38 @@ static FUNC_MAPPER: phf::Map<&str, fn(&str, &str) -> f64> = phf_map! {
     "hamming_ascii" => _hamming::hamming_ascii,
     "jaccard" =>_jaccard::jaccard,
     "jaccard_ascii" => _jaccard::jaccard_ascii,
-    // "levenshtein" => fn(),
-    // "levenshtein_ascii" => fn(),
-    // "damerau_levenshtein" => fn(),
-    // "damerau_levenshtein_ascii" => fn(),
-    // "jaro" => fn(),
-    // "jaro_ascii" => fn(),
-    // "jarowinkler" => fn(),
-    // "jarowinkler_ascii" => fn(),
+    // "levenshtein" => ,
+    // "levenshtein_ascii" => ,
+    // "damerau_levenshtein" => ,
+    // "damerau_levenshtein_ascii" => ,
+    // "jaro" => ,
+    // "jaro_ascii" => ,
+    // "jarowinkler" => ,
+    // "jarowinkler_ascii" => ,
 };
 
 #[pyfunction]
-fn hamming(s1: &str, s2: &str) -> PyResult<f64> {
-    Ok(_hamming::hamming(s1, s2))
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn hamming(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_hamming::hamming_ascii(s1, s2))
+    } else {
+        Ok(_hamming::hamming(s1, s2))
+    }
 }
 
 #[pyfunction]
-fn hamming_ascii(s1: &str, s2: &str) -> PyResult<f64> {
-    Ok(_hamming::hamming_ascii(s1, s2))
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn jaccard(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_jaccard::jaccard_ascii(s1, s2))
+    } else {
+        Ok(_jaccard::jaccard(s1, s2))
+    }
 }
 
 #[pyfunction]
+#[pyo3(signature = (arr1, arr2, func_name, n_jobs=0))]
 fn _compare(
     arr1: Vec<&str>,
     arr2: Vec<&str>,
@@ -59,4 +71,49 @@ fn _compare(
             }
         }
     }
+}
+
+#[pyfunction]
+#[pyo3(signature = (arr1, arr2, func_name, k_matches=5, threshold=0.0, n_jobs=0, quiet=false))]
+pub fn _match(
+    arr1: Vec<&str>,
+    arr2: Vec<&str>,
+    func_name: &str,
+    k_matches: usize,
+    threshold: f64,
+    n_jobs: usize,
+    quiet: bool,
+) -> PyResult<Vec<utils::ScoreTuple>> {
+    let func = FUNC_MAPPER.get(func_name);
+    let err = Err(PyKeyError::new_err(func_name.to_string()));
+
+    if n_jobs == 0 {
+        match func {
+            None => err,
+            Some(f) => Ok(fuzzymatch(&arr1, &arr2, *f, k_matches, threshold, quiet)),
+        }
+    } else if n_jobs == 1 {
+        match func {
+            None => err,
+            Some(f) => Ok(fuzzymatch_sequential(
+                &arr1, &arr2, *f, k_matches, threshold, quiet,
+            )),
+        }
+    } else {
+        match func {
+            None => err,
+            Some(f) => Ok(utils::create_rayon_pool(n_jobs)?
+                .install(|| fuzzymatch(&arr1, &arr2, *f, k_matches, threshold, quiet))),
+        }
+    }
+}
+
+#[pymodule]
+pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(hamming, m)?)?;
+    m.add_function(wrap_pyfunction!(jaccard, m)?)?;
+    m.add_function(wrap_pyfunction!(_compare, m)?)?;
+    m.add_function(wrap_pyfunction!(_match, m)?)?;
+
+    Ok(())
 }
