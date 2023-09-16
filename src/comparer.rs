@@ -1,13 +1,14 @@
 use rayon::prelude::*;
 
 use crate::utils;
-use indicatif::ParallelProgressIterator;
+use indicatif::{ParallelProgressIterator, ProgressIterator};
 
 pub fn fuzzycompare(arr1: &[&str], arr2: &[&str], func: utils::SimilarityFunc) -> Vec<f64> {
     assert_eq!(arr1.len(), arr2.len());
 
     let res: Vec<f64> = arr1
         .par_iter()
+        .progress_count(arr1.len() as u64)
         .zip(arr2)
         .map(|(s1, s2)| func(s1, s2))
         .collect();
@@ -22,7 +23,12 @@ pub fn fuzzycompare_sequential(
 ) -> Vec<f64> {
     assert_eq!(arr1.len(), arr2.len());
 
-    let res: Vec<f64> = arr1.iter().zip(arr2).map(|(s1, s2)| func(s1, s2)).collect();
+    let res: Vec<f64> = arr1
+        .iter()
+        .progress()
+        .zip(arr2)
+        .map(|(s1, s2)| func(s1, s2))
+        .collect();
 
     res
 }
@@ -36,8 +42,9 @@ mod test {
     fn test_compare() {
         let arr1 = ["abc", "def", "a;dlkfj", "asldkj;f", "ab"];
         let arr2 = ["abc", "a;sdklfj", "weuifh", "cjfkj", "abdef"];
-        dbg!(fuzzycompare(&arr1, &arr2, hamming_ascii));
-        dbg!(fuzzycompare(&arr1, &arr2, hamming));
-        dbg!(fuzzycompare_sequential(&arr1, &arr2, hamming));
+        fuzzycompare(&arr1, &arr2, hamming_ascii);
+        // dbg!(fuzzycompare(&arr1, &arr2, hamming_ascii));
+        // dbg!(fuzzycompare(&arr1, &arr2, hamming));
+        // dbg!(fuzzycompare_sequential(&arr1, &arr2, hamming));
     }
 }

@@ -1,39 +1,29 @@
 use crate::utils;
+use indicatif::{ParallelProgressIterator, ProgressIterator, ProgressStyle};
 use min_max_heap::MinMaxHeap;
 use rayon::prelude::*;
 
-#[derive(Debug)]
-pub struct Score(f64, String, String);
-
-impl Ord for Score {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        (self.0).total_cmp(&other.0)
-    }
-}
-
-impl PartialOrd for Score {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for Score {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Eq for Score {}
+const PROGRESS_TEMPLATE: &str =
+    "{percent}%|{wide_bar}| {human_pos}/{human_len} [{elapsed_precise}<{eta_precise}, {per_sec}]";
 
 fn get_matches(
     s1: &str,
     arr2: &[&str],
     func: utils::SimilarityFunc,
     k_matches: usize,
-) -> Vec<Score> {
+    threshold: f64,
+) -> Vec<utils::ScoreTuple> {
     let mut heap = MinMaxHeap::with_capacity(k_matches);
     for s2 in arr2 {
-        let score = Score(func(s1, s2), s1.to_string(), s2.to_string());
+        let score = utils::Score {
+            similarity: func(s1, s2),
+            str1: s1.to_string(),
+            str2: s2.to_string(),
+        };
+
+        if score.similarity < threshold {
+            continue;
+        }
 
         if heap.len() < k_matches {
             heap.push(score);
@@ -42,9 +32,9 @@ fn get_matches(
         }
     }
 
-    let mut res: Vec<Score> = Vec::with_capacity(heap.len());
+    let mut res: Vec<utils::ScoreTuple> = Vec::with_capacity(heap.len());
     for elem in heap {
-        res.push(elem);
+        res.push(<utils::ScoreTuple>::from(elem));
     }
 
     res
@@ -55,10 +45,26 @@ pub fn fuzzymatch(
     arr2: &[&str],
     func: utils::SimilarityFunc,
     k_matches: usize,
-) -> Vec<Score> {
-    let res: Vec<Score> = arr1
-        .par_iter()
-        .flat_map(|s1| get_matches(s1, arr2, func, k_matches))
+    threshold: f64,
+    quiet: bool,
+) -> Vec<utils::ScoreTuple> {
+    let iter = arr1.par_iter();
+
+    if quiet {
+        let res: Vec<utils::ScoreTuple> = iter
+            .flat_map(|s1| get_matches(s1, arr2, func, k_matches, threshold))
+            .collect();
+
+        return res;
+    }
+
+    let style = ProgressStyle::default_bar()
+        .template(PROGRESS_TEMPLATE)
+        .unwrap();
+
+    let res: Vec<utils::ScoreTuple> = iter
+        .progress_with_style(style)
+        .flat_map(|s1| get_matches(s1, arr2, func, k_matches, threshold))
         .collect();
 
     res
@@ -69,10 +75,26 @@ pub fn fuzzymatch_sequential(
     arr2: &[&str],
     func: utils::SimilarityFunc,
     k_matches: usize,
-) -> Vec<Score> {
-    let res: Vec<Score> = arr1
-        .iter()
-        .flat_map(|s1| get_matches(s1, arr2, func, k_matches))
+    threshold: f64,
+    quiet: bool,
+) -> Vec<utils::ScoreTuple> {
+    let iter = arr1.iter();
+
+    if quiet {
+        let res: Vec<utils::ScoreTuple> = iter
+            .flat_map(|s1| get_matches(s1, arr2, func, k_matches, threshold))
+            .collect();
+
+        return res;
+    }
+
+    let style = ProgressStyle::default_bar()
+        .template(PROGRESS_TEMPLATE)
+        .unwrap();
+
+    let res: Vec<utils::ScoreTuple> = iter
+        .progress_with_style(style)
+        .flat_map(|s1| get_matches(s1, arr2, func, k_matches, threshold))
         .collect();
 
     res
@@ -85,10 +107,29 @@ mod test {
 
     #[test]
     fn test_match() {
-        let arr1 = ["abc", "def", "a;dlkfj", "asldkj;f", "ab"];
-        let arr2 = ["abc", "a;sdklfj", "weuifh", "cjfkj", "abdef"];
+        let arr1 = ["abc", "def", "a;dlkfj", "asldkj;f", "3i"];
+        let arr2 = ["ab", "a;sdklfj", "weuifh", "cjfkj", "abdef"];
         let k_matches = 2;
-        dbg!(fuzzymatch(&arr1, &arr2, hamming_ascii, k_matches));
-        dbg!(fuzzymatch(&arr1, &arr2, hamming, k_matches));
+        let threshold = 1.0;
+        let quiet = true;
+        dbg!(fuzzymatch(
+            &arr1,
+            &arr2,
+            hamming_ascii,
+            k_matches,
+            threshold,
+            quiet
+        ));
+        dbg!(fuzzymatch(
+            &arr1, &arr2, hamming, k_matches, threshold, quiet
+        ));
+        dbg!(fuzzymatch_sequential(
+            &arr1,
+            &arr2,
+            hamming_ascii,
+            k_matches,
+            threshold,
+            quiet
+        ));
     }
 }
