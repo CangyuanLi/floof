@@ -104,6 +104,7 @@ pub fn fuzzymatch_sequential(
 mod test {
     use super::*;
     use crate::hamming::{hamming, hamming_ascii};
+    use crate::jaro::{jaro, jaro_ascii};
 
     #[test]
     fn test_match() {
@@ -131,5 +132,6 @@ mod test {
             threshold,
             quiet
         ));
+        dbg!(fuzzymatch(&arr1, &arr2, jaro, k_matches, threshold, quiet));
     }
 }

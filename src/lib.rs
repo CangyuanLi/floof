@@ -1,6 +1,7 @@
 mod comparer;
 mod hamming;
 mod jaccard;
+mod jaro;
 mod matcher;
 mod utils;
 

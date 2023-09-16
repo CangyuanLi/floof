@@ -1,0 +1,94 @@
+use crate::utils;
+use smallvec::smallvec;
+use unicode_segmentation::UnicodeSegmentation;
+
+fn jaro_similarity<T: PartialEq + Copy>(slice1: &[T], slice2: &[T]) -> f64 {
+    let len1 = slice1.len();
+    let len2 = slice2.len();
+
+    // Values from iter1 and iter2 are considered matching if they match AND are not
+    // more than `search_range` characters apart
+    let search_range = (std::cmp::max(len1, len2) / 2).saturating_sub(1);
+
+    let mut matches1: utils::FastVec<bool> = smallvec![false; len1];
+    let mut matches2: utils::FastVec<bool> = smallvec![false; len2];
+
+    let mut matches = 0;
+
+    for (i, x) in slice1.iter().enumerate() {
+        let start = i.saturating_sub(search_range);
+        let end = std::cmp::min(i + search_range, len2 - 1) + 1;
+
+        if start >= end {
+            continue;
+        }
+
+        for j in start..end {
+            if matches2[j] || x != &slice2[j] {
+                continue;
+            }
+
+            matches1[i] = true;
+            matches2[j] = true;
+            matches += 1;
+            break;
+        }
+    }
+
+    if matches == 0 {
+        return 0.0;
+    }
+
+    // transposition
+    let matched1 =
+        std::iter::zip(slice1, matches1).filter_map(|(x, m)| if m { Some(x) } else { None });
+    let matched2 =
+        std::iter::zip(slice2, matches2).filter_map(|(y, m)| if m { Some(y) } else { None });
+    let transpositions = std::iter::zip(matched1, matched2)
+        .filter(|(x, y)| x != y)
+        .count();
+
+    let matches = matches as f64;
+    let transpositions = transpositions as f64;
+    let len1 = len1 as f64;
+    let len2 = len2 as f64;
+
+    (matches / len1 + matches / len2 + ((matches - transpositions / 2.0) / matches)) / 3.0
+}
+
+pub fn jaro(s1: &str, s2: &str) -> f64 {
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
+
+    jaro_similarity(&us1, &us2)
+}
+
+pub fn jaro_ascii(s1: &str, s2: &str) -> f64 {
+    jaro_similarity(s1.as_bytes(), s2.as_bytes())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use eddie::slice::Jaro;
+    use unicode_segmentation::UnicodeSegmentation;
+
+    #[test]
+    fn test_jaro_ascii() {
+        let s1 = "akldsfjasdfadfasldkfja;sldfkja;fjd";
+        let s2 = "abfjal;sdflk";
+        let jaro = Jaro::new();
+        let sim = jaro.similarity(s1.as_bytes(), s2.as_bytes());
+        dbg!(sim);
+        dbg!(jaro_similarity(s1.as_bytes(), s2.as_bytes()));
+    }
+
+    #[test]
+    fn test_jaro() {
+        let s1: Vec<&str> = UnicodeSegmentation::graphemes("abc", true).collect();
+        let s2: Vec<&str> = UnicodeSegmentation::graphemes("abd", true).collect();
+        let jaro = Jaro::new();
+        let sim = jaro.similarity(&s1, &s2);
+        dbg!(sim);
+    }
+}
