@@ -1,13 +1,18 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module", "python"]
+python-source = "python"
+module-name = "floof._rustyfloof"
 
 [tool.pytest.ini_options]
 addopts = "--cov=floof"
 testpaths = ["tests"]
 
 [tool.mypy]
-mypy_path = "src"
+mypy_path = "python"
 ignore_missing_imports = true
 
 [tool.isort]
