@@ -27,6 +27,7 @@ indicatif = { version = "0.17.6", features = ["rayon"] }
 
 [dev-dependencies]
 csv = "1.1"
+eddie = "0.4.2"
 
 [features]
 python = []

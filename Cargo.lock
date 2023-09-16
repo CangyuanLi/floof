@@ -110,6 +110,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "eddie"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12ad36183b190ad1632999a8735b9842f3fda7a5afa433d9132e80860ef7051a"
+
+[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -127,6 +133,7 @@ version = "0.1.5"
 dependencies = [
  "ahash",
  "csv",
+ "eddie",
  "indicatif",
  "min-max-heap",
  "phf",
