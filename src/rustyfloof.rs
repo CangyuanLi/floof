@@ -2,6 +2,7 @@ use crate::comparer::{fuzzycompare, fuzzycompare_sequential};
 use crate::hamming as _hamming;
 use crate::jaccard as _jaccard;
 use crate::jaro as _jaro;
+use crate::levenshtein as _levenshtein;
 use crate::matcher::{fuzzymatch, fuzzymatch_sequential};
 use crate::utils;
 use phf::phf_map;
@@ -19,6 +20,8 @@ static FUNC_MAPPER: phf::Map<&str, fn(&str, &str) -> f64> = phf_map! {
     "jaro_ascii" => _jaro::jaro_ascii,
     "jaro_winkler" => _jaro::jaro_winkler,
     "jaro_winkler_ascii" => _jaro::jaro_winkler_ascii,
+    "levenshtein" => _levenshtein::levenshtein,
+    "levenshtein_ascii" => _levenshtein::levenshtein_ascii,
 };
 
 #[pyfunction]
@@ -68,6 +71,16 @@ fn jaro_winkler(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
         Ok(_jaro::jaro_winkler_ascii(s1, s2))
     } else {
         Ok(_jaro::jaro_winkler(s1, s2))
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn levenshtein(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_levenshtein::levenshtein_ascii(s1, s2))
+    } else {
+        Ok(_levenshtein::levenshtein(s1, s2))
     }
 }
 

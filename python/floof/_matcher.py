@@ -259,16 +259,10 @@ class Matcher:
             ncpus=ncpus,
         )
 
-    def levenshtein(
-        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
-    ) -> pd.DataFrame:
-        return self._get_all_matches(
-            match_func=self._get_matches_distance,
-            scorer=Levenshtein.distance,
-            k_matches=k_matches,
-            threshold=threshold,
-            ncpus=ncpus,
-        )
+    def levenshtein(self, k_matches: int = 5, threshold: int = 0) -> pd.DataFrame:
+        scorer = "levenshtein_ascii" if self._ascii_only else "levenshtein"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
 
     def hamming(
         self,

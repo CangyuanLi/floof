@@ -89,9 +89,9 @@ class Comparer:
         )
 
     def levenshtein(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score_from_distance, scorer=Levenshtein.distance
-        )
+        scorer = "levenshtein_ascii" if self._ascii_only else "levenshtein"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def hamming(self) -> list[float]:
         scorer = "hamming_ascii" if self._ascii_only else "hamming"

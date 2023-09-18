@@ -9,6 +9,8 @@ RustScorers = Literal[
     "jaro_ascii",
     "sorensen_dice",
     "sorensen_dice_ascii",
+    "levenshtein",
+    "levenshtein_ascii",
 ]
 
 def hamming(s1: str, s2: str, ascii_only: bool = False) -> float:
@@ -121,7 +123,27 @@ def jaro_winkler(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        _description_, by default False
+        If the string contains only ASCII characters, avoids the (expensive) operation
+        of creating Unicode graphemes, by default False
+
+    Returns
+    -------
+    float
+    """
+
+def levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
+    """Calculates the Levenshtein distance between two strings and scales it by the
+    length of the longest string. The Levenshtein algorithm allows for two operations:
+    substitution (e.g. "foo" -> "fou") and insertion (e.g. "ba" -> "bar"). The distance
+    is the mininum number of operations needed to transform one string into the other.
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        If the string contains only ASCII characters, avoids the (expensive) operation
+        of creating Unicode graphemes, by default False
 
     Returns
     -------
