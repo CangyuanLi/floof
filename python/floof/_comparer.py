@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Union
 
 import jellyfish
-import Levenshtein
 import pandas as pd
 import tqdm
 from thefuzz import fuzz
