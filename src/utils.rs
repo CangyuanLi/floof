@@ -90,6 +90,7 @@ impl From<Score> for ScoreTuple {
 /// * `distance` - The edit distance between two strings, e.g. a Hamming distance
 /// * `len1` - The length of the first string
 /// * `len2` - The length of the second string
+#[inline]
 pub fn distance_to_similarity(distance: usize, len1: usize, len2: usize) -> f64 {
     let max_len = std::cmp::max(len1, len2);
     let max_len = max_len as f64;
