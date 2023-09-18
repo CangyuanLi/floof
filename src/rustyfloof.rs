@@ -157,6 +157,7 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sorensen_dice, m)?)?;
     m.add_function(wrap_pyfunction!(jaro, m)?)?;
     m.add_function(wrap_pyfunction!(jaro_winkler, m)?)?;
+    m.add_function(wrap_pyfunction!(levenshtein, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;
     m.add_function(wrap_pyfunction!(_match, m)?)?;
 
