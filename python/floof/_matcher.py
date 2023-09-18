@@ -3,7 +3,6 @@ import heapq
 import typing
 from collections.abc import Callable
 
-import jarowinkler
 import jellyfish
 import Levenshtein
 import numpy as np

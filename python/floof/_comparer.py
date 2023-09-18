@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from typing import Union
 
-import jarowinkler
 import jellyfish
 import Levenshtein
 import pandas as pd
