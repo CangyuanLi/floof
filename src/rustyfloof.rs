@@ -13,6 +13,8 @@ static FUNC_MAPPER: phf::Map<&str, fn(&str, &str) -> f64> = phf_map! {
     "hamming_ascii" => _hamming::hamming_ascii,
     "jaccard" =>_jaccard::jaccard,
     "jaccard_ascii" => _jaccard::jaccard_ascii,
+    "sorensen_dice" => _jaccard::sorensen_dice,
+    "sorensen_dice_ascii" => _jaccard::sorensen_dice_ascii,
     "jaro" => _jaro::jaro,
     "jaro_ascii" => _jaro::jaro_ascii,
     "jaro_winkler" => _jaro::jaro_winkler,
@@ -36,6 +38,16 @@ fn jaccard(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
         Ok(_jaccard::jaccard_ascii(s1, s2))
     } else {
         Ok(_jaccard::jaccard(s1, s2))
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn sorensen_dice(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_jaccard::sorensen_dice_ascii(s1, s2))
+    } else {
+        Ok(_jaccard::sorensen_dice(s1, s2))
     }
 }
 
@@ -129,6 +141,7 @@ pub fn _match(
 pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hamming, m)?)?;
     m.add_function(wrap_pyfunction!(jaccard, m)?)?;
+    m.add_function(wrap_pyfunction!(sorensen_dice, m)?)?;
     m.add_function(wrap_pyfunction!(jaro, m)?)?;
     m.add_function(wrap_pyfunction!(jaro_winkler, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;

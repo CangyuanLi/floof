@@ -44,6 +44,27 @@ def jaccard(s1: str, s2: str, ascii_only: bool = False) -> float:
     """
     ...
 
+def sorensen_dice(s1: str, s2: str, ascii_only: bool = False) -> float:
+    r"""Calculates the Sorensen-Dice similarity between two strings. It is given by
+
+    ..math::
+
+        S(A, B) = \frac{2J}{1 + J}
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        If the string contains only ASCII characters, avoids the (expensive) operation
+        of creating Unicode graphemes, by default False
+
+    Returns
+    -------
+    float
+    """
+    ...
+
 def jaro(s1: str, s2: str, ascii_only: bool = False) -> float:
     r"""Calculates the Jaro similarity between two strings. The Jaro similarity is given
     as:
