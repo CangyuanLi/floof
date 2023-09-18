@@ -285,19 +285,15 @@ class Matcher:
 
         return self._get_all_matches_rust(scorer, k_matches, threshold)
 
-    def jaro_winkler(
-        self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
-    ) -> pd.DataFrame:
-        return self._get_all_matches(
-            match_func=self._get_matches_pct,
-            scorer=jarowinkler.jarowinkler_similarity,
-            k_matches=k_matches,
-            threshold=threshold,
-            ncpus=ncpus,
-        )
+    def jaro_winkler(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+        scorer = "jaro_winkler_ascii" if self._ascii_only else "jaro_winkler"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
 
     def jaro(
-        self, k_matches: int = 5, threshold: int = 0, n_jobs: int = None
+        self,
+        k_matches: int = 5,
+        threshold: float = 0,
     ) -> pd.DataFrame:
         scorer = "jaro_ascii" if self._ascii_only else "jaro"
 

@@ -2,6 +2,18 @@ use crate::utils;
 use smallvec::smallvec;
 use unicode_segmentation::UnicodeSegmentation;
 
+const DEFAULT_JARO_WINKLER_WEIGHT: f64 = 0.1;
+
+fn find_common_prefix_len<T: PartialEq>(slice1: &[T], slice2: &[T]) -> f64 {
+    slice1
+        .iter()
+        .zip(slice2.iter())
+        .take(4)
+        .take_while(|(ch1, ch2)| ch1 == ch2)
+        .count() as f64
+}
+
+#[allow(clippy::let_and_return)]
 fn jaro_similarity<T: PartialEq + Copy>(slice1: &[T], slice2: &[T]) -> f64 {
     let len1 = slice1.len();
     let len2 = slice2.len();
@@ -53,7 +65,14 @@ fn jaro_similarity<T: PartialEq + Copy>(slice1: &[T], slice2: &[T]) -> f64 {
     let len1 = len1 as f64;
     let len2 = len2 as f64;
 
-    (matches / len1 + matches / len2 + ((matches - transpositions / 2.0) / matches)) / 3.0
+    let jaro_sim =
+        (matches / len1 + matches / len2 + ((matches - transpositions / 2.0) / matches)) / 3.0;
+
+    jaro_sim
+}
+
+fn jaro_winkler_similarity(jaro_sim: f64, common_prefix_len: f64, p: f64) -> f64 {
+    jaro_sim + common_prefix_len * p * (1.0 - jaro_sim)
 }
 
 pub fn jaro(s1: &str, s2: &str) -> f64 {
@@ -65,6 +84,28 @@ pub fn jaro(s1: &str, s2: &str) -> f64 {
 
 pub fn jaro_ascii(s1: &str, s2: &str) -> f64 {
     jaro_similarity(s1.as_bytes(), s2.as_bytes())
+}
+
+pub fn jaro_winkler(s1: &str, s2: &str) -> f64 {
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
+
+    jaro_winkler_similarity(
+        jaro_similarity(&us1, &us2),
+        find_common_prefix_len(&us1, &us2),
+        DEFAULT_JARO_WINKLER_WEIGHT,
+    )
+}
+
+pub fn jaro_winkler_ascii(s1: &str, s2: &str) -> f64 {
+    let s1 = s1.as_bytes();
+    let s2 = s2.as_bytes();
+
+    jaro_winkler_similarity(
+        jaro_similarity(s1, s2),
+        find_common_prefix_len(s1, s2),
+        DEFAULT_JARO_WINKLER_WEIGHT,
+    )
 }
 
 #[cfg(test)]

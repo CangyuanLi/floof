@@ -15,12 +15,8 @@ static FUNC_MAPPER: phf::Map<&str, fn(&str, &str) -> f64> = phf_map! {
     "jaccard_ascii" => _jaccard::jaccard_ascii,
     "jaro" => _jaro::jaro,
     "jaro_ascii" => _jaro::jaro_ascii,
-    // "levenshtein" => ,
-    // "levenshtein_ascii" => ,
-    // "damerau_levenshtein" => ,
-    // "damerau_levenshtein_ascii" => ,
-    // "jarowinkler" => ,
-    // "jarowinkler_ascii" => ,
+    "jaro_winkler" => _jaro::jaro_winkler,
+    "jaro_winkler_ascii" => _jaro::jaro_winkler_ascii,
 };
 
 #[pyfunction]
@@ -50,6 +46,16 @@ fn jaro(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
         Ok(_jaro::jaro_ascii(s1, s2))
     } else {
         Ok(_jaro::jaro(s1, s2))
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn jaro_winkler(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_jaro::jaro_winkler_ascii(s1, s2))
+    } else {
+        Ok(_jaro::jaro_winkler(s1, s2))
     }
 }
 
@@ -124,6 +130,7 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hamming, m)?)?;
     m.add_function(wrap_pyfunction!(jaccard, m)?)?;
     m.add_function(wrap_pyfunction!(jaro, m)?)?;
+    m.add_function(wrap_pyfunction!(jaro_winkler, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;
     m.add_function(wrap_pyfunction!(_match, m)?)?;
 

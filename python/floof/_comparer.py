@@ -95,9 +95,9 @@ class Comparer:
         return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def jaro_winkler(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score, scorer=jarowinkler.jarowinkler_similarity
-        )
+        scorer = "jaro_winkler_ascii" if self._ascii_only else "jaro_winkler"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def jaro(self) -> list[float]:
         scorer = "jaro_ascii" if self._ascii_only else "jaro"

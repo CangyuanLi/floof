@@ -76,6 +76,30 @@ def jaro(s1: str, s2: str, ascii_only: bool = False) -> float:
     float
     """
 
+def jaro_winkler(s1: str, s2: str, ascii_only: bool = False) -> float:
+    r"""Calculates the Jaro-Winkler similarity between two strings. The Jaro-Winkler
+    similarity is given as
+
+    ..math::
+
+        jaro_{sim} + lp(1 - jaro_{sim})
+
+    where `jaro_sim` is the Jaro similarity, `l` is the length of the common prefix at
+    the start of the string (bounded at 4), and `p` is a constant scaling factor set at
+    `0.1`.
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        _description_, by default False
+
+    Returns
+    -------
+    float
+    """
+
 def _compare(
     arr1: list[str], arr2: list[str], func_name: RustScorers, n_jobs: int = 0
 ) -> list[float]: ...
