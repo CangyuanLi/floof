@@ -77,6 +77,11 @@ class Comparer:
 
         return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
+    def sorensen_dice(self) -> list[float]:
+        scorer = "sorensen_dice_ascii" if self._ascii_only else "sorensen_dice"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
+
     def damerau_levenshtein(self) -> list[float]:
         return self._apply_score(
             match_func=_get_score_from_distance,

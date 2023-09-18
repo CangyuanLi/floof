@@ -284,6 +284,11 @@ class Matcher:
 
         return self._get_all_matches_rust(scorer, k_matches, threshold)
 
+    def sorensen_dice(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+        scorer = "sorensen_dice_ascii" if self._ascii_only else "sorensen_dice"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
+
     def jaro_winkler(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
         scorer = "jaro_winkler_ascii" if self._ascii_only else "jaro_winkler"
 

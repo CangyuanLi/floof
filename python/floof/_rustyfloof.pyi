@@ -1,7 +1,14 @@
 from typing import Literal
 
 RustScorers = Literal[
-    "hamming", "hamming_ascii", "jaccard", "jaccard_ascii", "jaro", "jaro_ascii"
+    "hamming",
+    "hamming_ascii",
+    "jaccard",
+    "jaccard_ascii",
+    "jaro",
+    "jaro_ascii",
+    "sorensen_dice",
+    "sorensen_dice_ascii",
 ]
 
 def hamming(s1: str, s2: str, ascii_only: bool = False) -> float:
