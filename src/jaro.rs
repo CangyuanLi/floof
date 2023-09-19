@@ -14,7 +14,7 @@ fn find_common_prefix_len<T: PartialEq>(slice1: &[T], slice2: &[T]) -> f64 {
 }
 
 #[allow(clippy::let_and_return)]
-fn jaro_similarity<T: PartialEq + Copy>(slice1: &[T], slice2: &[T]) -> f64 {
+fn jaro_similarity<T: PartialEq>(slice1: &[T], slice2: &[T]) -> f64 {
     let len1 = slice1.len();
     let len2 = slice2.len();
 
