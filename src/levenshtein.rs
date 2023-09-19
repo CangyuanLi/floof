@@ -1,7 +1,7 @@
 use crate::utils;
 use unicode_segmentation::UnicodeSegmentation;
 
-fn levenshtein_similarity<T: PartialEq>(slice1: &[T], slice2: &[T]) -> f64 {
+pub fn levenshtein_similarity<T: PartialEq>(slice1: &[T], slice2: &[T]) -> f64 {
     let len2 = slice2.len();
     let mut cache: utils::FastVec<usize> = (1..len2 + 1).collect();
     let mut levenshtein_distance = 0;
