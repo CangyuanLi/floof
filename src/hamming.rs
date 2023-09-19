@@ -1,11 +1,7 @@
 use crate::utils;
 use unicode_segmentation::UnicodeSegmentation;
 
-fn hamming_similarity<T>(iter1: T, iter2: T) -> f64
-where
-    T: utils::HasLength + IntoIterator,
-    T::Item: PartialEq,
-{
+pub fn hamming_similarity<T: PartialEq>(iter1: &[T], iter2: &[T]) -> f64 {
     let len1 = iter1.len();
     let len2 = iter2.len();
     let mut dist = len1.abs_diff(len2);
@@ -22,7 +18,7 @@ pub fn hamming(s1: &str, s2: &str) -> f64 {
     let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
     let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
 
-    hamming_similarity(us1, us2)
+    hamming_similarity(&us1, &us2)
 }
 
 pub fn hamming_ascii(s1: &str, s2: &str) -> f64 {
