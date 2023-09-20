@@ -22,8 +22,8 @@ impl std::convert::From<FloofError> for pyo3::PyErr {
 const VEC_SIZE: usize = 32;
 
 pub type FastVec<T> = SmallVec<[T; VEC_SIZE]>;
-
 pub type SimilarityFunc = fn(&str, &str) -> f64;
+pub type SimilarityFuncSlice<T> = fn(&[T], &[T]) -> f64;
 
 pub trait HasLength {
     fn len(&self) -> usize;

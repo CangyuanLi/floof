@@ -174,10 +174,10 @@ fn match_slice_core<T: PartialEq + Sync>(
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
     let func = match func_name {
-        "hamming" => _hamming::hamming_similarity,
-        "jaro" => _jaro::jaro_similarity,
-        "jaro_winkler" => _jaro::jaro_winkler_similarity,
-        "levenshtein" => _levenshtein::levenshtein_similarity,
+        "hamming_similarity" => _hamming::hamming_similarity,
+        "jaro_similarity" => _jaro::jaro_similarity,
+        "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
+        "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
         _ => panic!("{func_name} is not a valid function"),
     };
 
