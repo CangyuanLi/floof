@@ -307,6 +307,12 @@ class Matcher:
         k_matches: int = 5,
         threshold: float = 0,
     ) -> pd.DataFrame:
+        # Usually, pre-processing the strings results in a significant speed increase,
+        # even for only ascii strings. However, this is not the case for Hamming, maybe
+        # due to the simplicity of the algorithm?
+        if self._ascii_only:
+            return self._get_all_matches_rust("hamming_ascii", k_matches, threshold)
+
         return self._get_all_matches_rust_slice(
             "hamming_similarity", k_matches, threshold
         )
