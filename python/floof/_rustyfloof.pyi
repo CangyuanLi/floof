@@ -13,6 +13,16 @@ RustScorers = Literal[
     "levenshtein_ascii",
 ]
 
+RustSliceScorers = Literal[
+    "hamming_similarity",
+    "jaro_similarity",
+    "jaro_winkler_similarity",
+    "levenshtein_similarity",
+]
+
+ProcessedUnicode = tuple[str, list[str]]
+ProcessedAscii = tuple[str, list[int]]
+
 def hamming(s1: str, s2: str, ascii_only: bool = False) -> float:
     """Calculates the extend Hamming similarity between two strings. The Hamming
     distance is defined as the total number of differences.
@@ -150,6 +160,8 @@ def levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
     float
     """
 
+def _extract_graphemes(arr1: list[str]) -> list[ProcessedUnicode]: ...
+def _extract_bytes(arr1: list[str]) -> list[ProcessedAscii]: ...
 def _compare(
     arr1: list[str], arr2: list[str], func_name: RustScorers, n_jobs: int = 0
 ) -> list[float]: ...
@@ -157,6 +169,24 @@ def _match(
     arr1: list[str],
     arr2: list[str],
     func_name: RustScorers,
+    k_matches: int = 5,
+    threshold: float = 0,
+    n_jobs: int = 0,
+    quiet: bool = False,
+): ...
+def _match_slice(
+    arr1: list[ProcessedUnicode],
+    arr2: list[ProcessedUnicode],
+    func_name: RustSliceScorers,
+    k_matches: int = 5,
+    threshold: float = 0,
+    n_jobs: int = 0,
+    quiet: bool = False,
+): ...
+def _match_slice_ascii(
+    arr1: list[ProcessedAscii],
+    arr2: list[ProcessedAscii],
+    func_name: RustSliceScorers,
     k_matches: int = 5,
     threshold: float = 0,
     n_jobs: int = 0,

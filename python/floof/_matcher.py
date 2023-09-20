@@ -11,7 +11,13 @@ import sklearn.neighbors
 import tqdm
 from thefuzz import fuzz
 
-from ._rustyfloof import _match
+from ._rustyfloof import (
+    _extract_bytes,
+    _extract_graphemes,
+    _match,
+    _match_slice,
+    _match_slice_ascii,
+)
 from .utils.types import (
     AllScorers,
     EditDistanceScorers,
@@ -30,6 +36,7 @@ class Matcher:
         n_jobs: int = -1,
         quiet: bool = False,
     ):
+        # Set class variables
         self._original = pd.Series(original)
         self._lookup = pd.Series(lookup)
         self._n_jobs = 0 if n_jobs == -1 else n_jobs
@@ -40,8 +47,22 @@ class Matcher:
         self._dedupe()
         self._validate()
 
+        # It's faster to iterate over lists on the python end, and provides a nice way
+        # to interface with the Rust backend as well.
         self._original_list = self._original.to_list()
         self._lookup_list = self._lookup.to_list()
+
+        # The custom Rust implementations have functions that operate on an arbitrary
+        # slice. This avoids the work of doing e.g. unicode grapheme segmentation on
+        # every function call, which is what happens if you just call func(s1, s2) in
+        # a nested loop.
+        func = _extract_bytes if self._ascii_only else _extract_graphemes
+        self._match_slice_func = (
+            _match_slice_ascii if self._ascii_only else _match_slice
+        )
+
+        self._original_list_processed = func(self._original_list)
+        self._lookup_list_processed = func(self._lookup_list)
 
     def _set_names(self):
         if self._original.name is None:
@@ -153,16 +174,18 @@ class Matcher:
         return merged
 
     def soundex(self) -> pd.DataFrame:
-        return self._phonetic_match(jellyfish.soundex, "soundex")
+        return self._get_matches_phonetic(jellyfish.soundex, "soundex")
 
     def metaphone(self) -> pd.DataFrame:
-        return self._phonetic_match(jellyfish.metaphone, "metaphone")
+        return self._get_matches_phonetic(jellyfish.metaphone, "metaphone")
 
     def nysiis(self) -> pd.DataFrame:
-        return self._phonetic_match(jellyfish.nysiis, "nysiis")
+        return self._get_matches_phonetic(jellyfish.nysiis, "nysiis")
 
     def match_rating_codex(self) -> pd.DataFrame:
-        return self._phonetic_match(jellyfish.match_rating_codex, "match_rating_codex")
+        return self._get_matches_phonetic(
+            jellyfish.match_rating_codex, "match_rating_codex"
+        )
 
     def _get_matches_distance(
         self, o_str: str, lookup: list[str], scorer: Callable, k_matches: int
@@ -240,8 +263,24 @@ class Matcher:
                 k_matches,
                 threshold,
                 self._n_jobs,
+                self._quiet,
             ),
             columns=["score", self._original.name, self._lookup.name],
+        )
+
+    def _get_all_matches_rust_slice(
+        self, scorer: str, k_matches: int, threshold: float
+    ) -> pd.DataFrame:
+        return pd.DataFrame(
+            self._match_slice_func(
+                self._original_list_processed,
+                self._lookup_list_processed,
+                scorer,
+                k_matches,
+                threshold,
+                self._n_jobs,
+                self._quiet,
+            )
         )
 
     def damerau_levenshtein(
@@ -259,18 +298,18 @@ class Matcher:
         )
 
     def levenshtein(self, k_matches: int = 5, threshold: int = 0) -> pd.DataFrame:
-        scorer = "levenshtein_ascii" if self._ascii_only else "levenshtein"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "levenshtein_similarity", k_matches, threshold
+        )
 
     def hamming(
         self,
         k_matches: int = 5,
         threshold: float = 0,
     ) -> pd.DataFrame:
-        scorer = "hamming_ascii" if self._ascii_only else "hamming"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "hamming_similarity", k_matches, threshold
+        )
 
     def jaccard(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
         scorer = "jaccard_ascii" if self._ascii_only else "jaccard"
@@ -283,18 +322,16 @@ class Matcher:
         return self._get_all_matches_rust(scorer, k_matches, threshold)
 
     def jaro_winkler(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "jaro_winkler_ascii" if self._ascii_only else "jaro_winkler"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "jaro_winkler_similarity", k_matches, threshold
+        )
 
     def jaro(
         self,
         k_matches: int = 5,
         threshold: float = 0,
     ) -> pd.DataFrame:
-        scorer = "jaro_ascii" if self._ascii_only else "jaro"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice("jaro_similarity", k_matches, threshold)
 
     def ratio(
         self, k_matches: int = 5, threshold: int = 80, ncpus: int = None
