@@ -1,4 +1,4 @@
-use crate::{rustyfloof::_rustyfloof::DEF, utils};
+use crate::utils;
 use smallvec::smallvec;
 use unicode_segmentation::UnicodeSegmentation;
 
