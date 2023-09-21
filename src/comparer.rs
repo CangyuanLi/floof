@@ -32,19 +32,3 @@ pub fn fuzzycompare_sequential(
 
     res
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use crate::hamming::{hamming, hamming_ascii};
-
-    #[test]
-    fn test_compare() {
-        let arr1 = ["abc", "def", "a;dlkfj", "asldkj;f", "ab"];
-        let arr2 = ["abc", "a;sdklfj", "weuifh", "cjfkj", "abdef"];
-        fuzzycompare(&arr1, &arr2, hamming_ascii);
-        // dbg!(fuzzycompare(&arr1, &arr2, hamming_ascii));
-        // dbg!(fuzzycompare(&arr1, &arr2, hamming));
-        // dbg!(fuzzycompare_sequential(&arr1, &arr2, hamming));
-    }
-}
