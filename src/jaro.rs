@@ -102,29 +102,3 @@ pub fn jaro_winkler_ascii(s1: &str, s2: &str) -> f64 {
 
     jaro_winkler_similarity(s1, s2)
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use eddie::slice::Jaro;
-    use unicode_segmentation::UnicodeSegmentation;
-
-    #[test]
-    fn test_jaro_ascii() {
-        let s1 = "akldsfjasdfadfasldkfja;sldfkja;fjd";
-        let s2 = "abfjal;sdflk";
-        let jaro = Jaro::new();
-        let sim = jaro.similarity(s1.as_bytes(), s2.as_bytes());
-        dbg!(sim);
-        dbg!(jaro_similarity(s1.as_bytes(), s2.as_bytes()));
-    }
-
-    #[test]
-    fn test_jaro() {
-        let s1: Vec<&str> = UnicodeSegmentation::graphemes("abc", true).collect();
-        let s2: Vec<&str> = UnicodeSegmentation::graphemes("abd", true).collect();
-        let jaro = Jaro::new();
-        let sim = jaro.similarity(&s1, &s2);
-        dbg!(sim);
-    }
-}
