@@ -6,6 +6,7 @@ use rayon::prelude::*;
 const PROGRESS_TEMPLATE: &str =
     "{percent}%|{wide_bar}| {human_pos}/{human_len} [{elapsed_precise}<{eta_precise}, {per_sec}]";
 
+#[allow(clippy::redundant_closure)]
 fn get_matches_slice<T: PartialEq>(
     s1: &(&str, &[T]),
     arr2: &[(&str, &[T])],
@@ -34,10 +35,10 @@ fn get_matches_slice<T: PartialEq>(
         }
     }
 
-    let mut res: Vec<utils::ScoreTuple> = Vec::with_capacity(heap.len());
-    for elem in heap {
-        res.push(<utils::ScoreTuple>::from(elem));
-    }
+    let res: Vec<utils::ScoreTuple> = heap
+        .into_iter()
+        .map(|elem| utils::ScoreTuple::from(elem))
+        .collect();
 
     res
 }
