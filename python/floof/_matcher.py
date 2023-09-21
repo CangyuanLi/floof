@@ -301,6 +301,9 @@ class Matcher:
             "levenshtein_similarity", k_matches, threshold
         )
 
+    def osa(self, k_matches: int = 5, threshold: int = 0) -> pd.DataFrame:
+        return self._get_all_matches_rust_slice("osa_similarity", k_matches, threshold)
+
     def hamming(
         self,
         k_matches: int = 5,

@@ -81,6 +81,16 @@ fn damerau_levenshtein(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 }
 
 #[pyfunction]
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn osa(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_levenshtein::osa_ascii(s1, s2))
+    } else {
+        Ok(_levenshtein::osa(s1, s2))
+    }
+}
+
+#[pyfunction]
 fn _extract_graphemes(arr: Vec<&str>) -> Vec<(&str, Vec<&str>)> {
     arr.iter()
         .map(|s| {
@@ -121,6 +131,8 @@ fn func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
         "levenshtein_ascii" => _levenshtein::levenshtein_ascii,
         "damerau_levenshtein" => _levenshtein::damerau_levenshtein,
         "damerau_levenshtein_ascii" => _levenshtein::damerau_levenshtein_ascii,
+        "osa" => _levenshtein::osa,
+        "osa_ascii" => _levenshtein::osa_ascii,
         _ => panic!("{func_name} is not a valid function"),
     };
 
@@ -216,6 +228,7 @@ fn _match_slice(
         "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
         "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
         "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
+        "osa_similarity" => _levenshtein::osa_similarity,
         _ => panic!("{func_name} is not a valid function"),
     };
 
@@ -262,6 +275,7 @@ fn _match_slice_ascii(
         "damerau_levenshtein_similarity_ascii" => {
             _levenshtein::damerau_levenshtein_similarity_ascii
         }
+        "osa_similarity" => _levenshtein::osa_similarity,
         _ => panic!("{func_name} is not a valid function"),
     };
 
@@ -288,6 +302,7 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(jaro_winkler, m)?)?;
     m.add_function(wrap_pyfunction!(levenshtein, m)?)?;
     m.add_function(wrap_pyfunction!(damerau_levenshtein, m)?)?;
+    m.add_function(wrap_pyfunction!(osa, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_graphemes, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_bytes, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;

@@ -1,4 +1,5 @@
-use crate::utils;
+use crate::utils::{self, FastVec};
+use smallvec::smallvec;
 use unicode_segmentation::UnicodeSegmentation;
 
 macro_rules! min {
@@ -39,6 +40,56 @@ pub fn levenshtein(s1: &str, s2: &str) -> f64 {
 
 pub fn levenshtein_ascii(s1: &str, s2: &str) -> f64 {
     levenshtein_similarity(s1.as_bytes(), s2.as_bytes())
+}
+
+// Optimal String Alignment
+
+pub fn osa_similarity<T: PartialEq>(slice1: &[T], slice2: &[T]) -> f64 {
+    let len1 = slice1.len();
+    let len2 = slice2.len();
+
+    let end_idx2 = len2 + 1;
+
+    let mut prev_two_distances: utils::FastVec<usize> = (0..end_idx2).collect();
+    let mut prev_distances: utils::FastVec<usize> = (0..end_idx2).collect();
+    let mut curr_distances: utils::FastVec<usize> = smallvec![0];
+
+    for (i, x) in slice1.iter().enumerate() {
+        curr_distances[0] = i + 1;
+
+        for (j, y) in slice2.iter().enumerate() {
+            let cost = if x == y { 0 } else { 1 };
+
+            let deletion_cost = curr_distances[j] + 1;
+            let insertion_cost = prev_distances[j + 1] + 1;
+            let substitution_cost = prev_distances[j] + cost;
+
+            curr_distances[j + 1] = min!(deletion_cost, insertion_cost, substitution_cost);
+
+            if i > 0 && j > 0 && x != y && x == &slice2[j - 1] && y == &slice1[i - 1] {
+                curr_distances[j + 1] =
+                    std::cmp::min(curr_distances[j + 1], prev_two_distances[j - 1] + 1);
+            }
+        }
+
+        prev_two_distances.clone_from(&prev_distances);
+        prev_distances.clone_from(&curr_distances);
+    }
+
+    let osa_distance = curr_distances[len2];
+
+    utils::distance_to_similarity(osa_distance, len1, len2)
+}
+
+pub fn osa(s1: &str, s2: &str) -> f64 {
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
+
+    osa_similarity(&us1, &us2)
+}
+
+pub fn osa_ascii(s1: &str, s2: &str) -> f64 {
+    osa_similarity(s1.as_bytes(), s2.as_bytes())
 }
 
 // Damerau-Levenshtein

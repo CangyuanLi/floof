@@ -93,6 +93,11 @@ class Comparer:
 
         return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
+    def osa(self) -> list[float]:
+        scorer = "osa_ascii" if self._ascii_only else "osa"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
+
     def hamming(self) -> list[float]:
         scorer = "hamming_ascii" if self._ascii_only else "hamming"
 

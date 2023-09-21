@@ -164,6 +164,48 @@ def levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
     float
     """
 
+def damerau_levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
+    """Calculates the Damerau-Levenshtein distance between two strings and scales it by
+    the length of the longest string. The Damerau-Levenshtein algorithm allows for four
+    operations: substitutions (e.g. "foo" -> "fou"), insertions (e.g. "ba" -> "bar"),
+    deletions (e.g. "foo" -> "fo"), and transpositions (e.g. "bay" -> "bya"). The
+    distance is the mininum number of operations needed to transform one string into
+    the other.
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        If the string contains only ASCII characters, avoids the (expensive) operation
+        of creating Unicode graphemes, by default False
+
+    Returns
+    -------
+    float
+    """
+
+def osa(s1: str, s2: str, ascii_only: bool = False) -> float:
+    """Calculates the Optimal String Alignment distance between two strings and scales
+    it by the length of the longest string. It is also called the Restricted Levenshtein
+    Distance. It allows for four operations: substitutions (e.g. "foo" -> "fou"),
+    insertions (e.g. "ba" -> "bar"), and deletions (e.g. "foo" -> "fo"). The
+    distance is the mininum number of operations needed to transform one string into
+    the other.
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        If the string contains only ASCII characters, avoids the (expensive) operation
+        of creating Unicode graphemes, by default False
+
+    Returns
+    -------
+    float
+    """
+
 def _extract_graphemes(arr1: list[str]) -> list[ProcessedUnicode]: ...
 def _extract_bytes(arr1: list[str]) -> list[ProcessedAscii]: ...
 def _compare(
