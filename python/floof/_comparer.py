@@ -82,10 +82,11 @@ class Comparer:
         return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def damerau_levenshtein(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score_from_distance,
-            scorer=jellyfish.damerau_levenshtein_distance,
+        scorer = (
+            "damerau_levenshtein_ascii" if self._ascii_only else "damerau_levenshtein"
         )
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def levenshtein(self) -> list[float]:
         scorer = "levenshtein_ascii" if self._ascii_only else "levenshtein"

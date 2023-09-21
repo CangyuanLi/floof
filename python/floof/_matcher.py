@@ -286,18 +286,17 @@ class Matcher:
     def damerau_levenshtein(
         self,
         k_matches: int = 5,
-        threshold: int = 80,
-        ncpus: int = None,
+        threshold: float = 0,
     ) -> pd.DataFrame:
-        return self._get_all_matches(
-            match_func=self._get_matches_distance,
-            scorer=jellyfish.damerau_levenshtein_distance,
-            k_matches=k_matches,
-            threshold=threshold,
-            ncpus=ncpus,
+        scorer = (
+            "damerau_levenshtein_similarity_ascii"
+            if self._ascii_only
+            else "damerau_levenshtein_similarity"
         )
 
-    def levenshtein(self, k_matches: int = 5, threshold: int = 0) -> pd.DataFrame:
+        return self._get_all_matches_rust_slice(scorer, k_matches, threshold)
+
+    def levenshtein(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "levenshtein_similarity", k_matches, threshold
         )

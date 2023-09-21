@@ -71,6 +71,16 @@ fn levenshtein(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 }
 
 #[pyfunction]
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn damerau_levenshtein(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_levenshtein::damerau_levenshtein_ascii(s1, s2))
+    } else {
+        Ok(_levenshtein::damerau_levenshtein(s1, s2))
+    }
+}
+
+#[pyfunction]
 fn _extract_graphemes(arr: Vec<&str>) -> Vec<(&str, Vec<&str>)> {
     arr.iter()
         .map(|s| {
@@ -95,7 +105,7 @@ fn _extract_bytes(slice: Vec<&str>) -> Vec<(&str, &[u8])> {
 }
 
 #[allow(clippy::let_and_return)]
-fn similarity_func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
+fn func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
     let func = match func_name {
         "hamming" => _hamming::hamming,
         "hamming_ascii" => _hamming::hamming_ascii,
@@ -109,6 +119,8 @@ fn similarity_func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
         "jaro_winkler_ascii" => _jaro::jaro_winkler_ascii,
         "levenshtein" => _levenshtein::levenshtein,
         "levenshtein_ascii" => _levenshtein::levenshtein_ascii,
+        "damerau_levenshtein" => _levenshtein::damerau_levenshtein,
+        "damerau_levenshtein_ascii" => _levenshtein::damerau_levenshtein_ascii,
         _ => panic!("{func_name} is not a valid function"),
     };
 
@@ -123,7 +135,7 @@ fn _compare(
     func_name: &str,
     n_jobs: usize,
 ) -> PyResult<Vec<f64>> {
-    let func = similarity_func_dispatcher(func_name);
+    let func = func_dispatcher(func_name);
 
     let arr1 = arr1.as_slice();
     let arr2 = arr2.as_slice();
@@ -148,7 +160,7 @@ fn _match(
     n_jobs: usize,
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
-    let func = similarity_func_dispatcher(func_name);
+    let func = func_dispatcher(func_name);
     let arr1 = arr1.as_slice();
     let arr2 = arr2.as_slice();
 
@@ -164,23 +176,15 @@ fn _match(
     }
 }
 
-fn match_slice_core<T: PartialEq + Sync>(
+fn match_slice_core<T: PartialEq + Sync + Eq + std::hash::Hash>(
     slice1: &[(&str, &[T])],
     slice2: &[(&str, &[T])],
-    func_name: &str,
+    func: fn(&[T], &[T]) -> f64,
     k_matches: usize,
     threshold: f64,
     n_jobs: usize,
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
-    let func = match func_name {
-        "hamming_similarity" => _hamming::hamming_similarity,
-        "jaro_similarity" => _jaro::jaro_similarity,
-        "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
-        "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
-        _ => panic!("{func_name} is not a valid function"),
-    };
-
     if n_jobs == 0 {
         Ok(fuzzymatch_slice(
             slice1, slice2, func, k_matches, threshold, quiet,
@@ -206,6 +210,15 @@ fn _match_slice(
     n_jobs: usize,
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
+    let func = match func_name {
+        "hamming_similarity" => _hamming::hamming_similarity,
+        "jaro_similarity" => _jaro::jaro_similarity,
+        "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
+        "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
+        "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
+        _ => panic!("{func_name} is not a valid function"),
+    };
+
     let processed_arr1: Vec<(&str, &[&str])> = processed_arr1
         .iter()
         .map(|(x, y)| (*x, y.as_slice()))
@@ -221,7 +234,7 @@ fn _match_slice(
     match_slice_core(
         processed_arr1,
         processed_arr2,
-        func_name,
+        func,
         k_matches,
         threshold,
         n_jobs,
@@ -240,13 +253,25 @@ fn _match_slice_ascii(
     n_jobs: usize,
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
+    let func = match func_name {
+        "hamming_similarity" => _hamming::hamming_similarity,
+        "jaro_similarity" => _jaro::jaro_similarity,
+        "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
+        "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
+        "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
+        "damerau_levenshtein_similarity_ascii" => {
+            _levenshtein::damerau_levenshtein_similarity_ascii
+        }
+        _ => panic!("{func_name} is not a valid function"),
+    };
+
     let processed_arr1 = processed_arr1.as_slice();
     let processed_arr2 = processed_arr2.as_slice();
 
     match_slice_core(
         processed_arr1,
         processed_arr2,
-        func_name,
+        func,
         k_matches,
         threshold,
         n_jobs,
@@ -262,6 +287,7 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(jaro, m)?)?;
     m.add_function(wrap_pyfunction!(jaro_winkler, m)?)?;
     m.add_function(wrap_pyfunction!(levenshtein, m)?)?;
+    m.add_function(wrap_pyfunction!(damerau_levenshtein, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_graphemes, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_bytes, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;

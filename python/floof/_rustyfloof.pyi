@@ -11,6 +11,8 @@ RustScorers = Literal[
     "sorensen_dice_ascii",
     "levenshtein",
     "levenshtein_ascii",
+    "damerau_levenshtein",
+    "damerau_levenshtein_ascii",
 ]
 
 RustSliceScorers = Literal[
@@ -18,6 +20,8 @@ RustSliceScorers = Literal[
     "jaro_similarity",
     "jaro_winkler_similarity",
     "levenshtein_similarity",
+    "damerau_levenshtein_similarity",
+    "damerau_levenshtein_similarity_ascii",
 ]
 
 ProcessedUnicode = tuple[str, list[str]]
