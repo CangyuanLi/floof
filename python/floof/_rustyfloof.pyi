@@ -36,8 +36,8 @@ def hamming(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -58,8 +58,8 @@ def jaccard(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -79,8 +79,8 @@ def sorensen_dice(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -112,8 +112,8 @@ def jaro(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -137,8 +137,8 @@ def jaro_winkler(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -156,8 +156,8 @@ def levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -177,8 +177,8 @@ def damerau_levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
@@ -188,7 +188,7 @@ def damerau_levenshtein(s1: str, s2: str, ascii_only: bool = False) -> float:
 def osa(s1: str, s2: str, ascii_only: bool = False) -> float:
     """Calculates the Optimal String Alignment distance between two strings and scales
     it by the length of the longest string. It is also called the Restricted Levenshtein
-    Distance. It allows for four operations: substitutions (e.g. "foo" -> "fou"),
+    Distance. It allows for three operations: substitutions (e.g. "foo" -> "fou"),
     insertions (e.g. "ba" -> "bar"), and deletions (e.g. "foo" -> "fo"). The
     distance is the mininum number of operations needed to transform one string into
     the other.
@@ -198,8 +198,8 @@ def osa(s1: str, s2: str, ascii_only: bool = False) -> float:
     s1 : str
     s2 : str
     ascii_only : bool, optional
-        If the string contains only ASCII characters, avoids the (expensive) operation
-        of creating Unicode graphemes, by default False
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
 
     Returns
     -------
