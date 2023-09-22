@@ -1,4 +1,4 @@
-use crate::utils::{self, FastVec};
+use crate::utils;
 use smallvec::smallvec;
 use unicode_segmentation::UnicodeSegmentation;
 

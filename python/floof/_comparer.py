@@ -8,12 +8,7 @@ from thefuzz import fuzz
 
 from ._rustyfloof import _compare
 from .utils.types import EditDistanceScorers, PhoneticScorers
-from .utils.utils import (
-    _get_score,
-    _get_score_from_distance,
-    _get_score_phonetic,
-    _normalize,
-)
+from .utils.utils import _get_score, _get_score_phonetic, _normalize
 
 
 class Comparer:
