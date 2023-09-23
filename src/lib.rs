@@ -1,12 +1,11 @@
 mod comparer;
 mod hamming;
-mod jaccard;
 mod jaro;
 mod levenshtein;
 mod matcher;
 mod metaphone;
-mod nysiis;
 mod phonetic;
+mod set_based;
 mod utils;
 
 mod rustyfloof;
