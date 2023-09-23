@@ -173,8 +173,10 @@ class Matcher:
 
         return merged
 
-    def soundex(self) -> pd.DataFrame:
-        return self._get_matches_phonetic(jellyfish.soundex, "soundex")
+    def soundex(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+        scorer = "soundex_ascii" if self._ascii_only else "soundex"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
 
     def metaphone(self) -> pd.DataFrame:
         return self._get_matches_phonetic(jellyfish.metaphone, "metaphone")

@@ -142,10 +142,10 @@ class Comparer:
             already_ratio=True,
         )
 
-    def soundex(self) -> list[int]:
-        return self._apply_score(
-            match_func=_get_score_phonetic, scorer=jellyfish.soundex, already_ratio=True
-        )
+    def soundex(self) -> list[float]:
+        scorer = "soundex_ascii" if self._ascii_only else "soundex"
+
+        return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
     def nysiis(self) -> list[int]:
         return self._apply_score(

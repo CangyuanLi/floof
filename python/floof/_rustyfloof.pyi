@@ -206,6 +206,26 @@ def osa(s1: str, s2: str, ascii_only: bool = False) -> float:
     float
     """
 
+def soundex(s1: str, s2: str, ascii_only: bool = False) -> float:
+    """Calculates the American Soundex of the two strings and returns the Hamming
+    similarity between the two encodings. Note that Soundex is only defined for ASCII
+    strings, and the default is to use the `deunicode` crate to make a best-effort map
+    between Unicode and ASCII.
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
+
+    Returns
+    -------
+    float
+    """
+    ...
+
 def _extract_graphemes(arr1: list[str]) -> list[ProcessedUnicode]: ...
 def _extract_bytes(arr1: list[str]) -> list[ProcessedAscii]: ...
 def _compare(
