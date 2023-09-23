@@ -2,25 +2,31 @@ use crate::hamming;
 use deunicode::AsciiChars;
 use smallvec::SmallVec;
 
+const A: u8 = 65;
 const B: u8 = 66;
 const C: u8 = 67;
 const D: u8 = 68;
+const E: u8 = 69;
 const F: u8 = 70;
 const G: u8 = 71;
 const H: u8 = 72;
+const I: u8 = 73;
 const J: u8 = 74;
 const K: u8 = 75;
 const L: u8 = 76;
 const M: u8 = 77;
 const N: u8 = 78;
+const O: u8 = 79;
 const P: u8 = 80;
 const Q: u8 = 81;
 const R: u8 = 82;
 const S: u8 = 83;
 const T: u8 = 84;
+const U: u8 = 85;
 const V: u8 = 86;
 const W: u8 = 87;
 const X: u8 = 88;
+const Y: u8 = 89;
 const Z: u8 = 90;
 
 // #[inline]

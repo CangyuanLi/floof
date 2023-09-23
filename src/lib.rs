@@ -5,7 +5,8 @@ mod jaro;
 mod levenshtein;
 mod matcher;
 mod metaphone;
-mod soundex;
+mod nysiis;
+mod phonetic;
 mod utils;
 
 mod rustyfloof;

@@ -6,7 +6,7 @@ use crate::levenshtein as _levenshtein;
 use crate::matcher::{
     fuzzymatch, fuzzymatch_sequential, fuzzymatch_slice, fuzzymatch_slice_sequential,
 };
-use crate::soundex as _soundex;
+use crate::phonetic as _phonetic;
 use crate::utils;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
@@ -96,9 +96,9 @@ fn osa(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 #[pyo3(signature = (s1, s2, ascii_only=false))]
 fn soundex(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
     if ascii_only {
-        Ok(_soundex::soundex_ascii(s1, s2))
+        Ok(_phonetic::soundex_ascii(s1, s2))
     } else {
-        Ok(_soundex::soundex(s1, s2))
+        Ok(_phonetic::soundex(s1, s2))
     }
 }
 
@@ -145,8 +145,8 @@ fn func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
         "damerau_levenshtein_ascii" => _levenshtein::damerau_levenshtein_ascii,
         "osa" => _levenshtein::osa,
         "osa_ascii" => _levenshtein::osa_ascii,
-        "soundex" => _soundex::soundex,
-        "soundex_ascii" => _soundex::soundex_ascii,
+        "soundex" => _phonetic::soundex,
+        "soundex_ascii" => _phonetic::soundex_ascii,
         _ => panic!("{func_name} is not a valid function"),
     };
 
@@ -290,7 +290,7 @@ fn _match_slice_ascii(
             _levenshtein::damerau_levenshtein_similarity_ascii
         }
         "osa_similarity" => _levenshtein::osa_similarity,
-        "soundex_similarity" => _soundex::soundex_similarity,
+        "soundex_similarity" => _phonetic::soundex_similarity,
         _ => return Err(PyKeyError::new_err(func_name.to_string())),
     };
 
