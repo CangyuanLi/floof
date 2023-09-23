@@ -1,12 +1,12 @@
 use crate::comparer::{fuzzycompare, fuzzycompare_sequential};
 use crate::hamming as _hamming;
-use crate::jaccard as _jaccard;
 use crate::jaro as _jaro;
 use crate::levenshtein as _levenshtein;
 use crate::matcher::{
     fuzzymatch, fuzzymatch_sequential, fuzzymatch_slice, fuzzymatch_slice_sequential,
 };
 use crate::phonetic as _phonetic;
+use crate::set_based as _set_based;
 use crate::utils;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
@@ -26,9 +26,9 @@ fn hamming(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 #[pyo3(signature = (s1, s2, ascii_only=false))]
 fn jaccard(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
     if ascii_only {
-        Ok(_jaccard::jaccard_ascii(s1, s2))
+        Ok(_set_based::jaccard_ascii(s1, s2))
     } else {
-        Ok(_jaccard::jaccard(s1, s2))
+        Ok(_set_based::jaccard(s1, s2))
     }
 }
 
@@ -36,9 +36,19 @@ fn jaccard(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 #[pyo3(signature = (s1, s2, ascii_only=false))]
 fn sorensen_dice(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
     if ascii_only {
-        Ok(_jaccard::sorensen_dice_ascii(s1, s2))
+        Ok(_set_based::sorensen_dice_ascii(s1, s2))
     } else {
-        Ok(_jaccard::sorensen_dice(s1, s2))
+        Ok(_set_based::sorensen_dice(s1, s2))
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (s1, s2, ascii_only=false))]
+fn cosine(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
+    if ascii_only {
+        Ok(_set_based::cosine_ascii(s1, s2))
+    } else {
+        Ok(_set_based::cosine(s1, s2))
     }
 }
 
@@ -131,10 +141,12 @@ fn func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
     let func = match func_name {
         "hamming" => _hamming::hamming,
         "hamming_ascii" => _hamming::hamming_ascii,
-        "jaccard" => _jaccard::jaccard,
-        "jaccard_ascii" => _jaccard::jaccard_ascii,
-        "sorensen_dice" => _jaccard::sorensen_dice,
-        "sorensen_dice_ascii" => _jaccard::sorensen_dice_ascii,
+        "jaccard" => _set_based::jaccard,
+        "jaccard_ascii" => _set_based::jaccard_ascii,
+        "sorensen_dice" => _set_based::sorensen_dice,
+        "sorensen_dice_ascii" => _set_based::sorensen_dice_ascii,
+        "cosine" => _set_based::cosine,
+        "cosine_ascii" => _set_based::cosine_ascii,
         "jaro" => _jaro::jaro,
         "jaro_ascii" => _jaro::jaro_ascii,
         "jaro_winkler" => _jaro::jaro_winkler,
@@ -313,6 +325,7 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hamming, m)?)?;
     m.add_function(wrap_pyfunction!(jaccard, m)?)?;
     m.add_function(wrap_pyfunction!(sorensen_dice, m)?)?;
+    m.add_function(wrap_pyfunction!(cosine, m)?)?;
     m.add_function(wrap_pyfunction!(jaro, m)?)?;
     m.add_function(wrap_pyfunction!(jaro_winkler, m)?)?;
     m.add_function(wrap_pyfunction!(levenshtein, m)?)?;

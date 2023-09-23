@@ -9,10 +9,14 @@ RustScorers = Literal[
     "jaro_ascii",
     "sorensen_dice",
     "sorensen_dice_ascii",
+    "cosine",
+    "cosine_ascii",
     "levenshtein",
     "levenshtein_ascii",
     "damerau_levenshtein",
     "damerau_levenshtein_ascii",
+    "osa",
+    "osa_ascii",
 ]
 
 RustSliceScorers = Literal[
@@ -22,6 +26,7 @@ RustSliceScorers = Literal[
     "levenshtein_similarity",
     "damerau_levenshtein_similarity",
     "damerau_levenshtein_similarity_ascii",
+    "osa_similarity",
 ]
 
 ProcessedUnicode = tuple[str, list[str]]
@@ -73,6 +78,29 @@ def sorensen_dice(s1: str, s2: str, ascii_only: bool = False) -> float:
     ..math::
 
         S(A, B) = \frac{2J}{1 + J}
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
+
+    Returns
+    -------
+    float
+    """
+    ...
+
+def cosine(s1: str, s2: str, ascii_only: bool = False) -> float:
+    r"""Calculates the Otsuka-Ochiai coefficient between two strings. Each string is
+    broken down into a set of characters, making it analogous to the Cosine distance
+    between two vectors. It is calculated as:
+
+    ..math::
+
+        K = \frac{|A \cap B|}{\sqrt{|A| \times |B|}}
 
     Parameters
     ----------
