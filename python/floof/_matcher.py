@@ -3,7 +3,6 @@ import heapq
 import typing
 from collections.abc import Callable
 
-import jellyfish
 import numpy as np
 import pandas as pd
 import sklearn.feature_extraction.text as sklearn_text

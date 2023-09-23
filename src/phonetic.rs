@@ -29,6 +29,8 @@ const X: u8 = 88;
 const Y: u8 = 89;
 const Z: u8 = 90;
 
+// Soundex
+
 // #[inline]
 // fn char_to_digit(c: char) -> char {
 //     match c {
@@ -112,3 +114,91 @@ pub fn soundex_ascii(s1: &str, s2: &str) -> f64 {
 
     soundex_similarity(s1.as_bytes(), s2.as_bytes())
 }
+
+// NYSIIS
+
+// fn is_vowel(b: u8) -> bool {
+//     matches!(b, A | E | I | O | U)
+// }
+
+// fn get_nysiis_code(slice: &[u8]) -> &[u8] {
+//     let mut vec = utils::FastVec::from(slice);
+
+//     // prefixes
+//     if vec.starts_with(&[M, A, C]) {
+//         vec[1] = C;
+//     } else if vec.starts_with(&[K, N]) {
+//         vec[0] = N;
+//     } else if vec[0] == K {
+//         vec[0] = C;
+//     } else if vec.starts_with(&[P, H]) || vec.starts_with(&[P, F]) {
+//         vec[0] = F;
+//         vec[1] = F;
+//     } else if vec.starts_with(&[S, C, H]) {
+//         vec[1] = S;
+//         vec[2] = S;
+//     }
+
+//     // suffixes
+//     if vec.ends_with(&[E, E]) || vec.ends_with(&[I, E]) {
+//         vec.pop();
+//         vec.pop();
+//         vec.push(I);
+//     } else if vec.ends_with(&[D, T])
+//         || vec.ends_with(&[R, T])
+//         || vec.ends_with(&[R, D])
+//         || vec.ends_with(&[N, T])
+//         || vec.ends_with(&[N, D])
+//     {
+//         vec.pop();
+//         vec.pop();
+//         vec.push(D);
+//     }
+
+//     // start building out the code
+//     // let nysiis_code = utils::FastVec
+//     let mut i = 1;
+//     while i < vec.len() {
+//         let b = vec[i];
+
+//         if i + 1 < slice.len() && b == E && vec[i + 1] == V {
+//             vec[i] = A;
+//             vec[i + 1] = F;
+//             i += 1;
+//         } else if is_vowel(b) {
+//             vec[i] = A;
+//         } else if b == Q {
+//             vec[i] = G;
+//         } else if b == Z {
+//             vec[i] = S;
+//         } else if b == M {
+//             vec[i] = N;
+//         } else if b == K {
+//             if i + 1 < slice.len() && vec[i + 1] == N {
+//                 vec[i] = N;
+//             } else {
+//                 vec[i] = C;
+//             }
+//         } else if b == S && vec[i + 1] == C && vec[i + 2] == H {
+//             vec[i + 1] = S;
+//             vec[i + 2] = H;
+//             i += 2; // skip ahead 3, but we always inc by 1 at end of the loop
+//         } else if b == P && vec[i + 1] == H {
+//             vec[i] = F;
+//             vec[i + 1] = F;
+//             i += 1; // skip ahead 2, but we always inc by 1 at end of the loop
+//         } else if b == H && (!is_vowel(vec[i - 1]) || !is_vowel(vec[i + 1])) {
+//             // If the current position is the letter 'H' and either the preceding or
+//             // following letter is not a vowel (AEIOU) then replace the current position
+//             // with the preceding letter
+//             1 + 1;
+//             vec[i] = vec[i - 1];
+//         } else if b == W && is_vowel(vec[i - 1]) {
+//             vec[i] = vec[i - 1];
+//         }
+
+//         i += 1;
+//     }
+
+//     &[1, 2, 3]
+// }
