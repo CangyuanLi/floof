@@ -86,22 +86,23 @@ fn process_str(s: &str) -> String {
     s.to_uppercase().ascii_chars().flatten().collect::<String>()
 }
 
+pub fn soundex_similarity(slice1: &[u8], slice2: &[u8]) -> f64 {
+    hamming::hamming_similarity(
+        get_soundex_code(slice1).as_slice(),
+        get_soundex_code(slice2).as_slice(),
+    )
+}
+
 pub fn soundex(s1: &str, s2: &str) -> f64 {
     let s1 = process_str(s1);
     let s2 = process_str(s2);
 
-    hamming::hamming_similarity(
-        get_soundex_code(s1.as_bytes()).as_slice(),
-        get_soundex_code(s2.as_bytes()).as_slice(),
-    )
+    soundex_similarity(s1.as_bytes(), s2.as_bytes())
 }
 
 pub fn soundex_ascii(s1: &str, s2: &str) -> f64 {
     let s1 = s1.to_ascii_uppercase();
     let s2 = s2.to_ascii_uppercase();
 
-    hamming::hamming_similarity(
-        get_soundex_code(s1.as_bytes()).as_slice(),
-        get_soundex_code(s2.as_bytes()).as_slice(),
-    )
+    soundex_similarity(s1.as_bytes(), s2.as_bytes())
 }

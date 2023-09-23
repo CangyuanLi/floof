@@ -8,6 +8,7 @@ use crate::matcher::{
 };
 use crate::soundex as _soundex;
 use crate::utils;
+use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -242,7 +243,7 @@ fn _match_slice(
         "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
         "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
         "osa_similarity" => _levenshtein::osa_similarity,
-        _ => panic!("{func_name} is not a valid function"),
+        _ => return Err(PyKeyError::new_err(func_name.to_string())),
     };
 
     let processed_arr1: Vec<(&str, &[&str])> = processed_arr1
@@ -289,7 +290,8 @@ fn _match_slice_ascii(
             _levenshtein::damerau_levenshtein_similarity_ascii
         }
         "osa_similarity" => _levenshtein::osa_similarity,
-        _ => panic!("{func_name} is not a valid function"),
+        "soundex_similarity" => _soundex::soundex_similarity,
+        _ => return Err(PyKeyError::new_err(func_name.to_string())),
     };
 
     let processed_arr1 = processed_arr1.as_slice();
