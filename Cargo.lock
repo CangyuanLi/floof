@@ -89,6 +89,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "deunicode"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "890d779e1bc371e4fa7727ef6d29a9346be20ddfe40cd8c744cd083ce0640b15"
+
+[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -105,6 +111,7 @@ name = "floof"
 version = "0.1.5"
 dependencies = [
  "ahash",
+ "deunicode",
  "indicatif",
  "min-max-heap",
  "pyo3",
