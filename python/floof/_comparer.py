@@ -147,25 +147,6 @@ class Comparer:
 
         return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
-    def nysiis(self) -> list[int]:
-        return self._apply_score(
-            match_func=_get_score_phonetic, scorer=jellyfish.nysiis, already_ratio=True
-        )
-
-    def match_rating_codex(self) -> list[int]:
-        return self._apply_score(
-            match_func=_get_score_phonetic,
-            scorer=jellyfish.match_rating_codex,
-            already_ratio=True,
-        )
-
-    def metaphone(self) -> list[int]:
-        return self._apply_score(
-            match_func=_get_score_phonetic,
-            scorer=jellyfish.metaphone,
-            already_ratio=True,
-        )
-
     def _dispatcher(self, func_name: str) -> Callable:
         func_mapper = {
             "damerau_levenshtein": self.damerau_levenshtein,

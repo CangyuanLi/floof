@@ -150,44 +150,14 @@ class Matcher:
             left_on=self._original.name,
             right_on=self._lookup.name,
         )
-        final["score"] = 100
+        final["score"] = 1
 
         return final
-
-    def _get_matches_phonetic(self, scorer: Callable, name: str) -> pd.DataFrame:
-        original_soundex = pd.Series(
-            scorer(o_str)
-            for o_str in tqdm.tqdm(self._original_list, disable=self._quiet)
-        )
-        lookup_soundex = pd.Series(
-            scorer(lu_str)
-            for lu_str in tqdm.tqdm(self._lookup_list, disable=self._quiet)
-        )
-
-        original = pd.concat([original_soundex, self._original], axis=1)
-        lookup = pd.concat([lookup_soundex, self._lookup], axis=1)
-
-        merged = pd.merge(left=original, right=lookup, how="inner", on=name)
-        merged["score"] = 100
-        merged.drop(columns=[name], inplace=True)
-
-        return merged
 
     def soundex(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
         scorer = "soundex_ascii" if self._ascii_only else "soundex"
 
         return self._get_all_matches_rust(scorer, k_matches, threshold)
-
-    def metaphone(self) -> pd.DataFrame:
-        return self._get_matches_phonetic(jellyfish.metaphone, "metaphone")
-
-    def nysiis(self) -> pd.DataFrame:
-        return self._get_matches_phonetic(jellyfish.nysiis, "nysiis")
-
-    def match_rating_codex(self) -> pd.DataFrame:
-        return self._get_matches_phonetic(
-            jellyfish.match_rating_codex, "match_rating_codex"
-        )
 
     def _get_matches_distance(
         self, o_str: str, lookup: list[str], scorer: Callable, k_matches: int
@@ -429,9 +399,6 @@ class Matcher:
             "token_set_ratio": self.token_set_ratio,
             "token_sort_ratio": self.token_sort_ratio,
             "tfidf": self.tfidf,
-            "match_rating_codex": self.match_rating_codex,
-            "metaphone": self.metaphone,
-            "nysiis": self.nysiis,
             "soundex": self.soundex,
         }
 
