@@ -291,29 +291,27 @@ class Matcher:
         )
 
     def jaccard(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "jaccard_ascii" if self._ascii_only else "jaccard"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "jaccard_similarity", k_matches, threshold
+        )
 
     def sorensen_dice(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "sorensen_dice_ascii" if self._ascii_only else "sorensen_dice"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "sorensen_dice_similarity", k_matches, threshold
+        )
 
     def cosine(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "cosine_ascii" if self._ascii_only else "cosine"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "cosine_similarity", k_matches, threshold
+        )
 
     def bag(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "bag_ascii" if self._ascii_only else "bag"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice("bag_similarity", k_matches, threshold)
 
     def overlap(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "overlap_ascii" if self._ascii_only else "overlap"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
+        return self._get_all_matches_rust_slice(
+            "overlap_similarity", k_matches, threshold
+        )
 
     def tversky(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
