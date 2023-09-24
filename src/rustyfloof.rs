@@ -267,6 +267,9 @@ fn _match_slice(
         "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
         "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
         "osa_similarity" => _levenshtein::osa_similarity,
+        "jaccard_similarity" => _set_based::jaccard_similarity,
+        "sorensen_dice_similarity" => _set_based::sorensen_dice_similarity,
+        "cosine_similarity" => _set_based::cosine_similarity,
         "bag_similarity" => _set_based::bag_similarity,
         _ => return Err(PyKeyError::new_err(func_name.to_string())),
     };
@@ -316,6 +319,9 @@ fn _match_slice_ascii(
         }
         "osa_similarity" => _levenshtein::osa_similarity,
         "soundex_similarity" => _phonetic::soundex_similarity,
+        "jaccard_similarity" => _set_based::jaccard_similarity,
+        "sorensen_dice_similarity" => _set_based::sorensen_dice_similarity,
+        "cosine_similarity" => _set_based::cosine_similarity,
         "bag_similarity" => _set_based::bag_similarity,
         _ => return Err(PyKeyError::new_err(func_name.to_string())),
     };
