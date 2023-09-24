@@ -15,6 +15,8 @@ RustScorers = Literal[
     "bag_ascii",
     "overlap",
     "overlap_ascii",
+    "tversky",
+    "tversky_ascii",
     "levenshtein",
     "levenshtein_ascii",
     "damerau_levenshtein",
@@ -38,6 +40,7 @@ RustSliceScorers = Literal[
     "cosine_similarity",
     "bag_similarity",
     "overlap_similarity",
+    "tversky_similarity",
     "soundex_similarity",
 ]
 
@@ -157,6 +160,30 @@ def overlap(s1: str, s2: str, ascii_only: bool = False) -> float:
     ..math::
 
         O(A, B) = |A \cap B| / min(|A|, |B|)
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
+
+    Returns
+    -------
+    float
+    """
+    ...
+
+def tversky(s1: str, s2: str, ascii_only: bool = False) -> float:
+    r"""Calculates the Tversky Index between two sets. A string's characters are
+    turned into a set. It is calculated as:
+
+    ..math::
+
+        T(A, B) = \frac{|A \cap B|}{|A \cap B| + \alpha |A - B| + \beta |B - A|}
+
+    where `alpha` and `beta` are set to 0.5.
 
     Parameters
     ----------

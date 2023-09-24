@@ -121,3 +121,27 @@ pub fn overlap(s1: &str, s2: &str) -> f64 {
 pub fn overlap_ascii(s1: &str, s2: &str) -> f64 {
     overlap_similarity(s1.as_bytes(), s2.as_bytes())
 }
+
+// Tverskey Index
+
+pub fn tversky_similarity<T: Eq + Hash>(slice1: &[T], slice2: &[T]) -> f64 {
+    let set1: ahash::AHashSet<_> = slice1.iter().collect();
+    let set2: ahash::AHashSet<_> = slice2.iter().collect();
+
+    let intersection_size = set1.intersection(&set2).count() as f64;
+    let set1m2_size = set1.difference(&set2).count() as f64;
+    let set2m1_size = set2.difference(&set1).count() as f64;
+
+    intersection_size / (intersection_size + 0.5 * set1m2_size + 0.5 * set2m1_size)
+}
+
+pub fn tversky(s1: &str, s2: &str) -> f64 {
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
+
+    tversky_similarity(&us1, &us2)
+}
+
+pub fn tversky_ascii(s1: &str, s2: &str) -> f64 {
+    tversky_similarity(s1.as_bytes(), s2.as_bytes())
+}
