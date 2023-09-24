@@ -1,3 +1,5 @@
+use crate::utils;
+use counter::Counter;
 use std::hash::Hash;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -80,4 +82,32 @@ pub fn cosine_ascii(s1: &str, s2: &str) -> f64 {
     let set2: ahash::HashSet<u8> = s2.bytes().collect();
 
     cosine_similarity(&set1, &set2)
+}
+
+// Bag
+
+pub fn bag_similarity<T: Eq + Hash>(slice1: &[T], slice2: &[T]) -> f64 {
+    let len1 = slice1.len();
+    let len2 = slice2.len();
+
+    let bag1: Counter<&T> = slice1.iter().collect();
+    let bag2: Counter<&T> = slice2.iter().collect();
+
+    let size1: usize = (bag1.clone() - bag2.clone()).values().sum();
+    let size2: usize = (bag2 - bag1).values().sum();
+
+    let max_size = std::cmp::max(size1, size2);
+
+    utils::distance_to_similarity(max_size, len1, len2)
+}
+
+pub fn bag(s1: &str, s2: &str) -> f64 {
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
+
+    bag_similarity(&us1, &us2)
+}
+
+pub fn bag_ascii(s1: &str, s2: &str) -> f64 {
+    bag_similarity(s1.as_bytes(), s2.as_bytes())
 }

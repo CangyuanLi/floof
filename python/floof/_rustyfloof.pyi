@@ -11,6 +11,8 @@ RustScorers = Literal[
     "sorensen_dice_ascii",
     "cosine",
     "cosine_ascii",
+    "bag",
+    "bag_ascii",
     "levenshtein",
     "levenshtein_ascii",
     "damerau_levenshtein",
@@ -27,6 +29,7 @@ RustSliceScorers = Literal[
     "damerau_levenshtein_similarity",
     "damerau_levenshtein_similarity_ascii",
     "osa_similarity",
+    "bag_similarity",
 ]
 
 ProcessedUnicode = tuple[str, list[str]]
@@ -101,6 +104,28 @@ def cosine(s1: str, s2: str, ascii_only: bool = False) -> float:
     ..math::
 
         K = \frac{|A \cap B|}{\sqrt{|A| \times |B|}}
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
+
+    Returns
+    -------
+    float
+    """
+    ...
+
+def bag(s1: str, s2: str, ascii_only: bool = False) -> float:
+    r"""Calculates the bag similarity between two strings. A bag is a set that contains
+    each character and its frequency in the string. Then,
+
+    ..math::
+
+        B(A, B) = max(|Bag(s1) - Bag(s2)|, |Bag(s2) - Bag(s2)|)
 
     Parameters
     ----------
