@@ -1,3 +1,4 @@
+use indicatif::ProgressStyle;
 use pyo3::exceptions::PyException;
 use pyo3::pyclass;
 use smallvec::SmallVec;
@@ -80,6 +81,15 @@ impl From<Score> for ScoreTuple {
         } = e;
         (similarity, str1, str2)
     }
+}
+
+const PROGRESS_TEMPLATE: &str =
+    "{percent}%|{wide_bar}| {human_pos}/{human_len} [{elapsed_precise}<{eta_precise}, {per_sec}]";
+
+pub fn create_progress_bar() -> ProgressStyle {
+    ProgressStyle::default_bar()
+        .template(PROGRESS_TEMPLATE)
+        .unwrap()
 }
 
 /// Returns a f64 that is the distance scaled by the max length of the two strings.
