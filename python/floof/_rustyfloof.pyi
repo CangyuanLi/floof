@@ -13,12 +13,16 @@ RustScorers = Literal[
     "cosine_ascii",
     "bag",
     "bag_ascii",
+    "overlap",
+    "overlap_ascii",
     "levenshtein",
     "levenshtein_ascii",
     "damerau_levenshtein",
     "damerau_levenshtein_ascii",
     "osa",
     "osa_ascii",
+    "soundex",
+    "soundex_ascii",
 ]
 
 RustSliceScorers = Literal[
@@ -33,6 +37,8 @@ RustSliceScorers = Literal[
     "sorensen_dice_similarity",
     "cosine_similarity",
     "bag_similarity",
+    "overlap_similarity",
+    "soundex_similarity",
 ]
 
 ProcessedUnicode = tuple[str, list[str]]
@@ -129,6 +135,28 @@ def bag(s1: str, s2: str, ascii_only: bool = False) -> float:
     ..math::
 
         B(A, B) = max(|Bag(s1) - Bag(s2)|, |Bag(s2) - Bag(s2)|)
+
+    Parameters
+    ----------
+    s1 : str
+    s2 : str
+    ascii_only : bool, optional
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
+
+    Returns
+    -------
+    float
+    """
+    ...
+
+def overlap(s1: str, s2: str, ascii_only: bool = False) -> float:
+    r"""Calculates the overlap coefficient between two sets. A string's characters are
+    turned into a set. It is calculated as:
+
+    ..math::
+
+        O(A, B) = |A \cap B| / min(|A|, |B|)
 
     Parameters
     ----------

@@ -99,3 +99,25 @@ pub fn bag(s1: &str, s2: &str) -> f64 {
 pub fn bag_ascii(s1: &str, s2: &str) -> f64 {
     bag_similarity(s1.as_bytes(), s2.as_bytes())
 }
+
+// Overlap coefficient
+
+pub fn overlap_similarity<T: Eq + Hash>(slice1: &[T], slice2: &[T]) -> f64 {
+    let set1: ahash::AHashSet<_> = slice1.iter().collect();
+    let set2: ahash::AHashSet<_> = slice2.iter().collect();
+
+    let intersection_size = set1.intersection(&set2).count();
+
+    intersection_size as f64 / std::cmp::min(set1.len(), set2.len()) as f64
+}
+
+pub fn overlap(s1: &str, s2: &str) -> f64 {
+    let us1: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s1, true).collect();
+    let us2: utils::FastVec<&str> = UnicodeSegmentation::graphemes(s2, true).collect();
+
+    overlap_similarity(&us1, &us2)
+}
+
+pub fn overlap_ascii(s1: &str, s2: &str) -> f64 {
+    overlap_similarity(s1.as_bytes(), s2.as_bytes())
+}

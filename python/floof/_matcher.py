@@ -310,6 +310,11 @@ class Matcher:
 
         return self._get_all_matches_rust(scorer, k_matches, threshold)
 
+    def overlap(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+        scorer = "overlap_ascii" if self._ascii_only else "overlap"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
+
     def jaro_winkler(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "jaro_winkler_similarity", k_matches, threshold
