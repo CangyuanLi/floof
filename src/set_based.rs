@@ -5,7 +5,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 // Jaccard
 
-pub fn jaccard_similarity<T: PartialEq + Hash + Eq>(slice1: &[T], slice2: &[T]) -> f64 {
+pub fn jaccard_similarity<T: Eq + Hash>(slice1: &[T], slice2: &[T]) -> f64 {
     let set1: ahash::HashSet<_> = slice1.iter().collect();
     let set2: ahash::HashSet<_> = slice2.iter().collect();
 
@@ -32,7 +32,7 @@ pub fn jaccard(s1: &str, s2: &str) -> f64 {
 
 // Sorensen-Dice
 
-pub fn sorensen_dice_similarity<T: PartialEq + Hash + Eq>(slice1: &[T], slice2: &[T]) -> f64 {
+pub fn sorensen_dice_similarity<T: Eq + Hash>(slice1: &[T], slice2: &[T]) -> f64 {
     let jaccard_sim = jaccard_similarity(slice1, slice2);
 
     (2.0 * jaccard_sim) / (1.0 + jaccard_sim)
@@ -51,7 +51,7 @@ pub fn sorensen_dice(s1: &str, s2: &str) -> f64 {
 
 // Cosine distance (Otsuka-Ochiai)
 
-pub fn cosine_similarity<T: PartialEq + Hash + Eq>(slice1: &[T], slice2: &[T]) -> f64 {
+pub fn cosine_similarity<T: Eq + Hash>(slice1: &[T], slice2: &[T]) -> f64 {
     let set1: ahash::HashSet<_> = slice1.iter().collect();
     let set2: ahash::HashSet<_> = slice2.iter().collect();
 
