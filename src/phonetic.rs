@@ -1,4 +1,5 @@
 use crate::hamming;
+use crate::utils;
 use deunicode::AsciiChars;
 use smallvec::SmallVec;
 
@@ -156,7 +157,9 @@ pub fn soundex_ascii(s1: &str, s2: &str) -> f64 {
 //     }
 
 //     // start building out the code
-//     // let nysiis_code = utils::FastVec
+//     let nysiis_code = utils::FastVec::new();
+//     nysiis_code.push(slice[0]);
+
 //     let mut i = 1;
 //     while i < vec.len() {
 //         let b = vec[i];
@@ -191,11 +194,16 @@ pub fn soundex_ascii(s1: &str, s2: &str) -> f64 {
 //             // If the current position is the letter 'H' and either the preceding or
 //             // following letter is not a vowel (AEIOU) then replace the current position
 //             // with the preceding letter
-//             1 + 1;
-//             vec[i] = vec[i - 1];
+//             if is_vowel(vec[i - 1]) {
+//                 vec[i] = A;
+//             } else {
+//                 vec[i] = vec[i - 1];
+//             }
 //         } else if b == W && is_vowel(vec[i - 1]) {
 //             vec[i] = vec[i - 1];
 //         }
+
+//         if
 
 //         i += 1;
 //     }
