@@ -29,6 +29,9 @@ RustSliceScorers = Literal[
     "damerau_levenshtein_similarity",
     "damerau_levenshtein_similarity_ascii",
     "osa_similarity",
+    "jaccard_similarity",
+    "sorensen_dice_similarity",
+    "cosine_similarity",
     "bag_similarity",
 ]
 
