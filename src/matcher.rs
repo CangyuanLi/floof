@@ -43,6 +43,31 @@ fn get_matches_slice<T: PartialEq>(
     res
 }
 
+#[allow(clippy::redundant_closure)]
+fn get_matches_slice_all<T: PartialEq>(
+    s1: &(&str, &[T]),
+    arr2: &[(&str, &[T])],
+    func: utils::SimilarityFuncSlice<T>,
+    threshold: f64,
+) -> Vec<utils::ScoreTuple> {
+    let mut res = Vec::with_capacity(arr2.len());
+    let s1_str = s1.0;
+    let s1_repr = s1.1;
+    for (s2, s2_repr) in arr2 {
+        let similarity = func(s1_repr, s2_repr);
+
+        if similarity < threshold {
+            continue;
+        }
+
+        let score = (similarity, s1_str.to_string(), s2.to_string());
+
+        res.push(score);
+    }
+
+    res
+}
+
 pub fn fuzzymatch_slice<T: PartialEq + Sync>(
     arr1: &[(&str, &[T])],
     arr2: &[(&str, &[T])],
