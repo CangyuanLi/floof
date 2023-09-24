@@ -1,14 +1,13 @@
 from collections.abc import Callable
 from typing import Union
 
-import jellyfish
 import pandas as pd
 import tqdm
 from thefuzz import fuzz
 
 from ._rustyfloof import _compare
 from .utils.types import EditDistanceScorers, PhoneticScorers
-from .utils.utils import _get_score, _get_score_phonetic, _normalize
+from .utils.utils import _get_score, _normalize
 
 
 class Comparer:
