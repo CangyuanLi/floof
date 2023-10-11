@@ -3,12 +3,16 @@ from collections.abc import Callable
 import pandas as pd
 
 from ._rustyfloof import (
+    _compare_slice,
+    _compare_slice_ascii,
     _extract_bytes_tup,
     _extract_graphemes_tup,
     _match,
     _match_slice,
     _match_slice_ascii,
 )
+from .utils.types import AllScorers
+from .utils.utils import _normalize
 
 
 class Matcher:
@@ -73,13 +77,6 @@ class Matcher:
         # replace one with the other (NaN with "" or vice versa) first
         self._original = self._original.drop_duplicates().replace({"": pd.NA}).dropna()
         self._lookup = self._lookup.drop_duplicates().replace({"": pd.NA}).dropna()
-
-    @staticmethod
-    def _clean_and_filter(df: pd.DataFrame, threshold: int) -> pd.DataFrame:
-        df["score"] = df["score"] * 100
-        df = df.loc[df["score"] >= threshold]
-
-        return df
 
     def exact(self) -> pd.DataFrame:
         final = pd.merge(
@@ -216,3 +213,60 @@ class Matcher:
         }
 
         return func_mapper[func_name]
+
+    def match(
+        self,
+        scorers: list[AllScorers],
+        weights: list[float] = None,
+        filter_k_matches: int = 20,
+        filter_threshold: float = 0.5,
+        drop_intermediate: bool = True,
+    ):
+        if weights is None and scorers is None:
+            default_scorers = {
+                "damerau_levenshtein": 1,
+                "jaro_winkler": 1,
+                "hamming": 0.1,
+            }
+            scorers = default_scorers.keys()
+            weights = default_scorers.values()
+        elif weights is None and scorers is not None:
+            weights = [1 for _ in scorers]
+
+        if len(weights) != len(scorers):
+            raise ValueError("Number of scorers and weights must match.")
+
+        weights = _normalize(weights)  # normalize to 1
+        scorer_dict = {s: w for s, w in zip(scorers, weights)}
+
+        # # Start with an exact match
+        # final = self.exact()
+        # final = final.rename(columns={"score": "exact_score"})
+
+        # # Remove exact matches from the possible pool
+        # mask = ~(self._lookup.isin(final[self._lookup.name]))
+        # lookup = self._lookup.loc[mask]
+
+        matched = self.hamming(k_matches=filter_k_matches, threshold=filter_threshold)
+        original_list = [x[1] for x in self._original_list_processed]
+        lookup_list = [x[1] for x in self._lookup_list_processed]
+
+        compare_func = _compare_slice_ascii if self._ascii_only else _compare_slice
+
+        score_cols = []
+        for scorer in scorers:
+            col_name = f"{scorer}_score"
+            if scorer == "hamming":
+                continue
+
+            matched[col_name] = compare_func(
+                original_list, lookup_list, scorer, n_jobs=self._n_jobs
+            )
+            matched[col_name] = matched[col_name] * scorer_dict[scorer]
+
+        matched["final_score"] = matched[score_cols].sum(axis=1, skipna=True)
+
+        if drop_intermediate:
+            matched = matched[[self._original.name, self._lookup.name, "final_score"]]
+
+        return matched
