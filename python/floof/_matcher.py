@@ -1,8 +1,6 @@
 from collections.abc import Callable
 
-import numpy as np
 import pandas as pd
-from thefuzz import fuzz
 
 from ._rustyfloof import (
     _extract_bytes_tup,
