@@ -5,7 +5,8 @@ use crate::hamming as _hamming;
 use crate::jaro as _jaro;
 use crate::levenshtein as _levenshtein;
 use crate::matcher::{
-    fuzzymatch, fuzzymatch_sequential, fuzzymatch_slice, fuzzymatch_slice_sequential,
+    fuzzymatch, fuzzymatch_sequential, fuzzymatch_slice, fuzzymatch_slice_all,
+    fuzzymatch_slice_all_sequential, fuzzymatch_slice_sequential,
 };
 use crate::phonetic as _phonetic;
 use crate::set_based as _set_based;
@@ -362,6 +363,7 @@ fn _match(
     }
 }
 
+#[allow(clippy::collapsible_else_if)]
 fn match_slice_core<T: PartialEq + Sync + Eq + std::hash::Hash>(
     slice1: &[(&str, &[T])],
     slice2: &[(&str, &[T])],
@@ -371,17 +373,30 @@ fn match_slice_core<T: PartialEq + Sync + Eq + std::hash::Hash>(
     n_jobs: usize,
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
-    if n_jobs == 0 {
-        Ok(fuzzymatch_slice(
-            slice1, slice2, func, k_matches, threshold, quiet,
-        ))
-    } else if n_jobs == 1 {
-        Ok(fuzzymatch_slice_sequential(
-            slice1, slice2, func, k_matches, threshold, quiet,
-        ))
+    if k_matches == slice2.len() {
+        if n_jobs == 0 {
+            Ok(fuzzymatch_slice_all(slice1, slice2, func, threshold, quiet))
+        } else if n_jobs == 1 {
+            Ok(fuzzymatch_slice_all_sequential(
+                slice1, slice2, func, threshold, quiet,
+            ))
+        } else {
+            Ok(utils::create_rayon_pool(n_jobs)?
+                .install(|| fuzzymatch_slice_all(slice1, slice2, func, threshold, quiet)))
+        }
     } else {
-        Ok(utils::create_rayon_pool(n_jobs)?
-            .install(|| fuzzymatch_slice(slice1, slice2, func, k_matches, threshold, quiet)))
+        if n_jobs == 0 {
+            Ok(fuzzymatch_slice(
+                slice1, slice2, func, k_matches, threshold, quiet,
+            ))
+        } else if n_jobs == 1 {
+            Ok(fuzzymatch_slice_sequential(
+                slice1, slice2, func, k_matches, threshold, quiet,
+            ))
+        } else {
+            Ok(utils::create_rayon_pool(n_jobs)?
+                .install(|| fuzzymatch_slice(slice1, slice2, func, k_matches, threshold, quiet)))
+        }
     }
 }
 

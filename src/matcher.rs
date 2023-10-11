@@ -1,5 +1,5 @@
 use crate::utils;
-use indicatif::{ParallelProgressIterator, ProgressIterator, ProgressStyle};
+use indicatif::{ParallelProgressIterator, ProgressIterator};
 use min_max_heap::MinMaxHeap;
 use rayon::prelude::*;
 
