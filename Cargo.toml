@@ -29,3 +29,5 @@ python = []
 
 [profile.release]
 panic = "abort"
+strip = "symbols"
+codegen-units = 1
