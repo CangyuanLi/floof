@@ -251,6 +251,92 @@ fn _compare(
     }
 }
 
+fn compare_slice_core<T: PartialEq + Sync + Eq + std::hash::Hash>(
+    slice1: &[&[T]],
+    slice2: &[&[T]],
+    func: fn(&[T], &[T]) -> f64,
+    n_jobs: usize,
+    quiet: bool,
+) -> PyResult<Vec<f64>> {
+    if n_jobs == 0 {
+        Ok(fuzzycompare_slice(slice1, slice2, func, quiet))
+    } else if n_jobs == 1 {
+        Ok(fuzzycompare_slice_sequential(slice1, slice2, func, quiet))
+    } else {
+        Ok(utils::create_rayon_pool(n_jobs)?
+            .install(|| fuzzycompare_slice(slice1, slice2, func, quiet)))
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (processed_arr1, processed_arr2, func_name, n_jobs=0, quiet=false))]
+fn _compare_slice(
+    processed_arr1: Vec<Vec<&str>>,
+    processed_arr2: Vec<Vec<&str>>,
+    func_name: &str,
+    n_jobs: usize,
+    quiet: bool,
+) -> PyResult<Vec<f64>> {
+    let func = match func_name {
+        "hamming_similarity" => _hamming::hamming_similarity,
+        "jaro_similarity" => _jaro::jaro_similarity,
+        "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
+        "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
+        "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
+        "osa_similarity" => _levenshtein::osa_similarity,
+        "jaccard_similarity" => _set_based::jaccard_similarity,
+        "sorensen_dice_similarity" => _set_based::sorensen_dice_similarity,
+        "cosine_similarity" => _set_based::cosine_similarity,
+        "bag_similarity" => _set_based::bag_similarity,
+        "overlap_similarity" => _set_based::overlap_similarity,
+        "tversky_similarity" => _set_based::tversky_similarity,
+        _ => return Err(PyKeyError::new_err(func_name.to_string())),
+    };
+
+    let processed_arr1: Vec<&[&str]> = processed_arr1.iter().map(|x| x.as_slice()).collect();
+    let processed_arr1 = processed_arr1.as_slice();
+
+    let processed_arr2: Vec<&[&str]> = processed_arr2.iter().map(|x| x.as_slice()).collect();
+    let processed_arr2 = processed_arr2.as_slice();
+
+    compare_slice_core(processed_arr1, processed_arr2, func, n_jobs, quiet)
+}
+
+#[pyfunction]
+#[pyo3(signature = (processed_arr1, processed_arr2, func_name, n_jobs=0, quiet=false))]
+fn _compare_slice_ascii(
+    processed_arr1: Vec<&[u8]>,
+    processed_arr2: Vec<&[u8]>,
+    func_name: &str,
+    n_jobs: usize,
+    quiet: bool,
+) -> PyResult<Vec<f64>> {
+    let func = match func_name {
+        "hamming_similarity" => _hamming::hamming_similarity,
+        "jaro_similarity" => _jaro::jaro_similarity,
+        "jaro_winkler_similarity" => _jaro::jaro_winkler_similarity,
+        "levenshtein_similarity" => _levenshtein::levenshtein_similarity,
+        "damerau_levenshtein_similarity" => _levenshtein::damerau_levenshtein_similarity,
+        "damerau_levenshtein_similarity_ascii" => {
+            _levenshtein::damerau_levenshtein_similarity_ascii
+        }
+        "osa_similarity" => _levenshtein::osa_similarity,
+        "soundex_similarity" => _phonetic::soundex_similarity,
+        "jaccard_similarity" => _set_based::jaccard_similarity,
+        "sorensen_dice_similarity" => _set_based::sorensen_dice_similarity,
+        "cosine_similarity" => _set_based::cosine_similarity,
+        "bag_similarity" => _set_based::bag_similarity,
+        "overlap_similarity" => _set_based::overlap_similarity,
+        "tversky_similarity" => _set_based::tversky_similarity,
+        _ => return Err(PyKeyError::new_err(func_name.to_string())),
+    };
+
+    let processed_arr1 = processed_arr1.as_slice();
+    let processed_arr2 = processed_arr2.as_slice();
+
+    compare_slice_core(processed_arr1, processed_arr2, func, n_jobs, quiet)
+}
+
 #[pyfunction]
 #[pyo3(signature = (arr1, arr2, func_name, k_matches=5, threshold=0.0, n_jobs=0, quiet=false))]
 fn _match(
@@ -396,42 +482,6 @@ fn _match_slice_ascii(
     )
 }
 
-// #[pyfunction]
-// #[pyo3(signature = (processed_arr1, processed_arr2, func_name, k_matches=5, threshold=0.0, n_jobs=0, quiet=false))]
-// fn _match_slice_multiple(
-//     processed_arr1: Vec<(&str, Vec<&str>)>,
-//     processed_arr2: Vec<(&str, Vec<&str>)>,
-//     func_name: &str,
-//     k_matches: usize,
-//     threshold: f64,
-//     n_jobs: usize,
-//     quiet: bool,
-// ) -> PyResult<Vec<utils::ScoreTuple>> {
-//     let func = slice_func_dispatcher!(func_name);
-
-//     let processed_arr1: Vec<(&str, &[&str])> = processed_arr1
-//         .iter()
-//         .map(|(x, y)| (*x, y.as_slice()))
-//         .collect();
-//     let processed_arr1 = processed_arr1.as_slice();
-
-//     let processed_arr2: Vec<(&str, &[&str])> = processed_arr2
-//         .iter()
-//         .map(|(x, y)| (*x, y.as_slice()))
-//         .collect();
-//     let processed_arr2 = processed_arr2.as_slice();
-
-//     match_slice_core(
-//         processed_arr1,
-//         processed_arr2,
-//         func,
-//         k_matches,
-//         threshold,
-//         n_jobs,
-//         quiet,
-//     )
-// }
-
 #[pymodule]
 pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hamming, m)?)?;
@@ -452,6 +502,8 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(_extract_bytes, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_bytes_tup, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;
+    m.add_function(wrap_pyfunction!(_compare_slice, m)?)?;
+    m.add_function(wrap_pyfunction!(_compare_slice_ascii, m)?)?;
     m.add_function(wrap_pyfunction!(_match, m)?)?;
     m.add_function(wrap_pyfunction!(_match_slice, m)?)?;
     m.add_function(wrap_pyfunction!(_match_slice_ascii, m)?)?;
