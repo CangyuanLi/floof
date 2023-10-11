@@ -69,7 +69,7 @@ def main():
     # matcher_unicode._get_all_matches_rust("hamming_ascii", k_matches=5, threshold=0)
     # matcher_unicode._get_all_matches_rust("jaro_ascii", k_matches=5, threshold=0)
     # matcher_ascii.jaro()
-    matcher_unicode.jaro()
+    matcher_ascii.hamming()
 
 
 if __name__ == "__main__":
