@@ -1,4 +1,8 @@
-use crate::comparer::{fuzzycompare, fuzzycompare_sequential};
+use std::hash::Hash;
+
+use crate::comparer::{
+    fuzzycompare, fuzzycompare_sequential, fuzzycompare_slice, fuzzycompare_slice_sequential,
+};
 use crate::hamming as _hamming;
 use crate::jaro as _jaro;
 use crate::levenshtein as _levenshtein;
@@ -143,7 +147,18 @@ fn soundex(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 }
 
 #[pyfunction]
-fn _extract_graphemes(arr: Vec<&str>) -> Vec<(&str, Vec<&str>)> {
+fn _extract_graphemes(arr: Vec<&str>) -> Vec<Vec<&str>> {
+    arr.iter()
+        .map(|s| {
+            let us: Vec<&str> = UnicodeSegmentation::graphemes(*s, true).collect();
+
+            us
+        })
+        .collect()
+}
+
+#[pyfunction]
+fn _extract_graphemes_tup(arr: Vec<&str>) -> Vec<(&str, Vec<&str>)> {
     arr.iter()
         .map(|s| {
             let s = *s;
@@ -155,7 +170,19 @@ fn _extract_graphemes(arr: Vec<&str>) -> Vec<(&str, Vec<&str>)> {
 }
 
 #[pyfunction]
-fn _extract_bytes(slice: Vec<&str>) -> Vec<(&str, &[u8])> {
+fn _extract_bytes(slice: Vec<&str>) -> Vec<&[u8]> {
+    slice
+        .iter()
+        .map(|s| {
+            let bytes = s.as_bytes();
+
+            bytes
+        })
+        .collect()
+}
+
+#[pyfunction]
+fn _extract_bytes_tup(slice: Vec<&str>) -> Vec<(&str, &[u8])> {
     slice
         .iter()
         .map(|s| {
@@ -202,12 +229,13 @@ fn func_dispatcher(func_name: &str) -> utils::SimilarityFunc {
 }
 
 #[pyfunction]
-#[pyo3(signature = (arr1, arr2, func_name, n_jobs=0))]
+#[pyo3(signature = (arr1, arr2, func_name, n_jobs=0, quiet=false))]
 fn _compare(
     arr1: Vec<&str>,
     arr2: Vec<&str>,
     func_name: &str,
     n_jobs: usize,
+    quiet: bool,
 ) -> PyResult<Vec<f64>> {
     let func = func_dispatcher(func_name);
 
@@ -215,11 +243,11 @@ fn _compare(
     let arr2 = arr2.as_slice();
 
     if n_jobs == 0 {
-        Ok(fuzzycompare(arr1, arr2, func))
+        Ok(fuzzycompare(arr1, arr2, func, quiet))
     } else if n_jobs == 1 {
-        Ok(fuzzycompare_sequential(arr1, arr2, func))
+        Ok(fuzzycompare_sequential(arr1, arr2, func, quiet))
     } else {
-        Ok(utils::create_rayon_pool(n_jobs)?.install(|| fuzzycompare(arr1, arr2, func)))
+        Ok(utils::create_rayon_pool(n_jobs)?.install(|| fuzzycompare(arr1, arr2, func, quiet)))
     }
 }
 
@@ -368,6 +396,42 @@ fn _match_slice_ascii(
     )
 }
 
+// #[pyfunction]
+// #[pyo3(signature = (processed_arr1, processed_arr2, func_name, k_matches=5, threshold=0.0, n_jobs=0, quiet=false))]
+// fn _match_slice_multiple(
+//     processed_arr1: Vec<(&str, Vec<&str>)>,
+//     processed_arr2: Vec<(&str, Vec<&str>)>,
+//     func_name: &str,
+//     k_matches: usize,
+//     threshold: f64,
+//     n_jobs: usize,
+//     quiet: bool,
+// ) -> PyResult<Vec<utils::ScoreTuple>> {
+//     let func = slice_func_dispatcher!(func_name);
+
+//     let processed_arr1: Vec<(&str, &[&str])> = processed_arr1
+//         .iter()
+//         .map(|(x, y)| (*x, y.as_slice()))
+//         .collect();
+//     let processed_arr1 = processed_arr1.as_slice();
+
+//     let processed_arr2: Vec<(&str, &[&str])> = processed_arr2
+//         .iter()
+//         .map(|(x, y)| (*x, y.as_slice()))
+//         .collect();
+//     let processed_arr2 = processed_arr2.as_slice();
+
+//     match_slice_core(
+//         processed_arr1,
+//         processed_arr2,
+//         func,
+//         k_matches,
+//         threshold,
+//         n_jobs,
+//         quiet,
+//     )
+// }
+
 #[pymodule]
 pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hamming, m)?)?;
@@ -384,7 +448,9 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(osa, m)?)?;
     m.add_function(wrap_pyfunction!(soundex, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_graphemes, m)?)?;
+    m.add_function(wrap_pyfunction!(_extract_graphemes_tup, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_bytes, m)?)?;
+    m.add_function(wrap_pyfunction!(_extract_bytes_tup, m)?)?;
     m.add_function(wrap_pyfunction!(_compare, m)?)?;
     m.add_function(wrap_pyfunction!(_match, m)?)?;
     m.add_function(wrap_pyfunction!(_match_slice, m)?)?;

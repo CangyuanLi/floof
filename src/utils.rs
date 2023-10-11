@@ -86,7 +86,7 @@ impl From<Score> for ScoreTuple {
 const PROGRESS_TEMPLATE: &str =
     "{percent}%|{wide_bar}| {human_pos}/{human_len} [{elapsed_precise}<{eta_precise}, {per_sec}]";
 
-pub fn create_progress_bar() -> ProgressStyle {
+pub fn create_progress_style() -> ProgressStyle {
     ProgressStyle::default_bar()
         .template(PROGRESS_TEMPLATE)
         .unwrap()

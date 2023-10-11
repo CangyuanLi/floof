@@ -11,8 +11,8 @@ import tqdm
 from thefuzz import fuzz
 
 from ._rustyfloof import (
-    _extract_bytes,
-    _extract_graphemes,
+    _extract_bytes_tup,
+    _extract_graphemes_tup,
     _match,
     _match_slice,
     _match_slice_ascii,
@@ -55,7 +55,7 @@ class Matcher:
         # slice. This avoids the work of doing e.g. unicode grapheme segmentation on
         # every function call, which is what happens if you just call func(s1, s2) in
         # a nested loop.
-        func = _extract_bytes if self._ascii_only else _extract_graphemes
+        func = _extract_bytes_tup if self._ascii_only else _extract_graphemes_tup
         self._match_slice_func = (
             _match_slice_ascii if self._ascii_only else _match_slice
         )

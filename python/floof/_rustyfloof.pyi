@@ -44,8 +44,8 @@ RustSliceScorers = Literal[
     "soundex_similarity",
 ]
 
-ProcessedUnicode = tuple[str, list[str]]
-ProcessedAscii = tuple[str, list[int]]
+ProcessedUnicode = list[str]
+ProcessedAscii = list[int]
 
 def hamming(s1: str, s2: str, ascii_only: bool = False) -> float:
     """Calculates the extend Hamming similarity between two strings. The Hamming
@@ -339,6 +339,8 @@ def soundex(s1: str, s2: str, ascii_only: bool = False) -> float:
 
 def _extract_graphemes(arr1: list[str]) -> list[ProcessedUnicode]: ...
 def _extract_bytes(arr1: list[str]) -> list[ProcessedAscii]: ...
+def _extract_graphemes_tup(arr1: list[str]) -> list[tuple[str, ProcessedUnicode]]: ...
+def _extract_bytes_tup(arr1: list[str]) -> list[tuple[str, ProcessedAscii]]: ...
 def _compare(
     arr1: list[str], arr2: list[str], func_name: RustScorers, n_jobs: int = 0
 ) -> list[float]: ...

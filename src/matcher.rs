@@ -83,7 +83,7 @@ pub fn fuzzymatch_slice_all<T: PartialEq + Sync>(
     }
 
     let res: Vec<utils::ScoreTuple> = iter
-        .progress_with_style(utils::create_progress_bar())
+        .progress_with_style(utils::create_progress_style())
         .flat_map(|s1| get_matches_slice_all(s1, arr2, func, threshold))
         .collect();
 
@@ -108,7 +108,7 @@ pub fn fuzzymatch_slice_all_sequential<T: PartialEq>(
     }
 
     let res: Vec<utils::ScoreTuple> = iter
-        .progress_with_style(utils::create_progress_bar())
+        .progress_with_style(utils::create_progress_style())
         .flat_map(|s1| get_matches_slice_all(s1, arr2, func, threshold))
         .collect();
 
@@ -134,7 +134,7 @@ pub fn fuzzymatch_slice<T: PartialEq + Sync>(
     }
 
     let res: Vec<utils::ScoreTuple> = iter
-        .progress_with_style(utils::create_progress_bar())
+        .progress_with_style(utils::create_progress_style())
         .flat_map(|s1| get_matches_slice(s1, arr2, func, k_matches, threshold))
         .collect();
 
@@ -160,7 +160,7 @@ pub fn fuzzymatch_slice_sequential<T: PartialEq + Sync>(
     }
 
     let res: Vec<utils::ScoreTuple> = iter
-        .progress_with_style(utils::create_progress_bar())
+        .progress_with_style(utils::create_progress_style())
         .flat_map(|s1| get_matches_slice(s1, arr2, func, k_matches, threshold))
         .collect();
 
@@ -220,7 +220,7 @@ pub fn fuzzymatch(
     }
 
     let res: Vec<utils::ScoreTuple> = iter
-        .progress_with_style(utils::create_progress_bar())
+        .progress_with_style(utils::create_progress_style())
         .flat_map(|s1| get_matches(s1, arr2, func, k_matches, threshold))
         .collect();
 
@@ -246,7 +246,7 @@ pub fn fuzzymatch_sequential(
     }
 
     let res: Vec<utils::ScoreTuple> = iter
-        .progress_with_style(utils::create_progress_bar())
+        .progress_with_style(utils::create_progress_style())
         .flat_map(|s1| get_matches(s1, arr2, func, k_matches, threshold))
         .collect();
 
