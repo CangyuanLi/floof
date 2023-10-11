@@ -1,5 +1,3 @@
-use std::hash::Hash;
-
 use crate::comparer::{
     fuzzycompare, fuzzycompare_sequential, fuzzycompare_slice, fuzzycompare_slice_sequential,
 };
