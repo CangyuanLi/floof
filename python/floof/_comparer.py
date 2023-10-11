@@ -193,11 +193,8 @@ class Comparer:
         if weights is None and scorers is None:
             default_scorers = {
                 "damerau_levenshtein": 1,
-                "jaro": 0.9,
                 "jaro_winkler": 1,
-                "levenshtein": 0.9,
-                "partial_ratio": 0.5,
-                "token_sort_ratio": 0.6,
+                "hamming": 0.1,
             }
             scorers = default_scorers.keys()
             weights = default_scorers.values()
