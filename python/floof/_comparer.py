@@ -3,11 +3,10 @@ from typing import Union
 
 import pandas as pd
 import tqdm
-from thefuzz import fuzz
 
 from ._rustyfloof import _compare
 from .utils.types import EditDistanceScorers, PhoneticScorers
-from .utils.utils import _get_score, _normalize
+from .utils.utils import _normalize
 
 
 class Comparer:
@@ -127,40 +126,6 @@ class Comparer:
 
         return _compare(self._original, self._lookup, scorer, self._n_jobs)
 
-    def ratio(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score, scorer=fuzz.ratio, already_ratio=True
-        )
-
-    def partial_ratio(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score, scorer=fuzz.partial_ratio, already_ratio=True
-        )
-
-    def token_sort_ratio(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score, scorer=fuzz.token_sort_ratio, already_ratio=True
-        )
-
-    def token_set_ratio(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score, scorer=fuzz.token_set_ratio, already_ratio=True
-        )
-
-    def partial_token_set_ratio(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score,
-            scorer=fuzz.partial_token_set_ratio,
-            already_ratio=True,
-        )
-
-    def partial_token_sort_ratio(self) -> list[float]:
-        return self._apply_score(
-            match_func=_get_score,
-            scorer=fuzz.partial_token_sort_ratio,
-            already_ratio=True,
-        )
-
     def soundex(self) -> list[float]:
         scorer = "soundex_ascii" if self._ascii_only else "soundex"
 
@@ -173,12 +138,6 @@ class Comparer:
             "jaro": self.jaro,
             "jaro_winkler": self.jaro_winkler,
             "levenshtein": self.levenshtein,
-            "partial_ratio": self.partial_ratio,
-            "partial_token_set_ratio": self.partial_token_set_ratio,
-            "partial_token_sort_ratio": self.partial_token_sort_ratio,
-            "ratio": self.ratio,
-            "token_set_ratio": self.token_set_ratio,
-            "token_sort_ratio": self.token_sort_ratio,
         }
 
         return func_mapper[func_name]
