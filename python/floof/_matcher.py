@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from typing import Optional
 
 import pandas as pd
 
@@ -78,26 +79,12 @@ class Matcher:
         self._original = self._original.drop_duplicates().replace({"": pd.NA}).dropna()
         self._lookup = self._lookup.drop_duplicates().replace({"": pd.NA}).dropna()
 
-    def exact(self) -> pd.DataFrame:
-        final = pd.merge(
-            left=self._original,
-            right=self._lookup,
-            how="inner",
-            left_on=self._original.name,
-            right_on=self._lookup.name,
-        )
-        final["score"] = 1
-
-        return final
-
-    def soundex(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
-        scorer = "soundex_ascii" if self._ascii_only else "soundex"
-
-        return self._get_all_matches_rust(scorer, k_matches, threshold)
-
     def _get_all_matches_rust(
-        self, scorer: str, k_matches: int, threshold: float
+        self, scorer: str, k_matches: Optional[int], threshold: float
     ) -> pd.DataFrame:
+        if k_matches is None:
+            k_matches = len(self._lookup_list)
+
         return pd.DataFrame(
             _match(
                 self._original_list,
@@ -112,8 +99,11 @@ class Matcher:
         )
 
     def _get_all_matches_rust_slice(
-        self, scorer: str, k_matches: int, threshold: float
+        self, scorer: str, k_matches: Optional[int], threshold: float
     ) -> pd.DataFrame:
+        if k_matches is None:
+            k_matches = len(self._lookup_list)
+
         return pd.DataFrame(
             self._match_slice_func(
                 self._original_list_processed,
@@ -126,9 +116,28 @@ class Matcher:
             )
         )
 
+    def exact(self) -> pd.DataFrame:
+        final = pd.merge(
+            left=self._original,
+            right=self._lookup,
+            how="inner",
+            left_on=self._original.name,
+            right_on=self._lookup.name,
+        )
+        final["score"] = 1
+
+        return final
+
+    def soundex(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
+        scorer = "soundex_ascii" if self._ascii_only else "soundex"
+
+        return self._get_all_matches_rust(scorer, k_matches, threshold)
+
     def damerau_levenshtein(
         self,
-        k_matches: int = 5,
+        k_matches: Optional[int] = 5,
         threshold: float = 0,
     ) -> pd.DataFrame:
         scorer = (
@@ -139,17 +148,19 @@ class Matcher:
 
         return self._get_all_matches_rust_slice(scorer, k_matches, threshold)
 
-    def levenshtein(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def levenshtein(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "levenshtein_similarity", k_matches, threshold
         )
 
-    def osa(self, k_matches: int = 5, threshold: int = 0) -> pd.DataFrame:
+    def osa(self, k_matches: Optional[int] = 5, threshold: float = 0) -> pd.DataFrame:
         return self._get_all_matches_rust_slice("osa_similarity", k_matches, threshold)
 
     def hamming(
         self,
-        k_matches: int = 5,
+        k_matches: Optional[int] = 5,
         threshold: float = 0,
     ) -> pd.DataFrame:
         # Usually, pre-processing the strings results in a significant speed increase,
@@ -162,42 +173,54 @@ class Matcher:
             "hamming_similarity", k_matches, threshold
         )
 
-    def jaccard(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def jaccard(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "jaccard_similarity", k_matches, threshold
         )
 
-    def sorensen_dice(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def sorensen_dice(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "sorensen_dice_similarity", k_matches, threshold
         )
 
-    def cosine(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def cosine(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "cosine_similarity", k_matches, threshold
         )
 
-    def bag(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def bag(self, k_matches: Optional[int] = 5, threshold: float = 0) -> pd.DataFrame:
         return self._get_all_matches_rust_slice("bag_similarity", k_matches, threshold)
 
-    def overlap(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def overlap(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "overlap_similarity", k_matches, threshold
         )
 
-    def tversky(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def tversky(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "tversky_similarity", k_matches, threshold
         )
 
-    def jaro_winkler(self, k_matches: int = 5, threshold: float = 0) -> pd.DataFrame:
+    def jaro_winkler(
+        self, k_matches: Optional[int] = 5, threshold: float = 0
+    ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice(
             "jaro_winkler_similarity", k_matches, threshold
         )
 
     def jaro(
         self,
-        k_matches: int = 5,
+        k_matches: Optional[int] = 5,
         threshold: float = 0,
     ) -> pd.DataFrame:
         return self._get_all_matches_rust_slice("jaro_similarity", k_matches, threshold)
@@ -216,9 +239,9 @@ class Matcher:
 
     def match(
         self,
-        scorers: list[AllScorers],
-        weights: list[float] = None,
-        filter_k_matches: int = 20,
+        scorers: Optional[list[AllScorers]] = None,
+        weights: Optional[list[float]] = None,
+        filter_k_matches: Optional[int] = 20,
         filter_threshold: float = 0.5,
         drop_intermediate: bool = True,
     ):
@@ -238,14 +261,6 @@ class Matcher:
 
         weights = _normalize(weights)  # normalize to 1
         scorer_dict = {s: w for s, w in zip(scorers, weights)}
-
-        # # Start with an exact match
-        # final = self.exact()
-        # final = final.rename(columns={"score": "exact_score"})
-
-        # # Remove exact matches from the possible pool
-        # mask = ~(self._lookup.isin(final[self._lookup.name]))
-        # lookup = self._lookup.loc[mask]
 
         matched = self.hamming(k_matches=filter_k_matches, threshold=filter_threshold)
         original_list = [x[1] for x in self._original_list_processed]
