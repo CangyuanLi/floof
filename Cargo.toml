@@ -8,7 +8,6 @@ repository = "https://github.com/cangyuanli/floof/"
 license = "MIT"
 readme = "README.md"
 
-
 [lib]
 name = "floof"
 crate-type = ["cdylib"]
@@ -27,3 +26,6 @@ counter = "0.5.7"
 
 [features]
 python = []
+
+[profile.release]
+panic = "abort"
