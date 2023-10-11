@@ -146,6 +146,16 @@ fn soundex(s1: &str, s2: &str, ascii_only: bool) -> PyResult<f64> {
 }
 
 #[pyfunction]
+#[pyo3(signature = (s, ascii_only=false))]
+fn soundex_code(s: &str, ascii_only: bool) -> PyResult<String> {
+    if ascii_only {
+        Ok(_phonetic::soundex_code_ascii(s))
+    } else {
+        Ok(_phonetic::soundex_code(s))
+    }
+}
+
+#[pyfunction]
 fn _extract_graphemes(arr: Vec<&str>) -> Vec<Vec<&str>> {
     arr.iter()
         .map(|s| {
@@ -510,6 +520,7 @@ pub fn _rustyfloof(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(damerau_levenshtein, m)?)?;
     m.add_function(wrap_pyfunction!(osa, m)?)?;
     m.add_function(wrap_pyfunction!(soundex, m)?)?;
+    m.add_function(wrap_pyfunction!(soundex_code, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_graphemes, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_graphemes_tup, m)?)?;
     m.add_function(wrap_pyfunction!(_extract_bytes, m)?)?;

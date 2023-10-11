@@ -337,6 +337,24 @@ def soundex(s1: str, s2: str, ascii_only: bool = False) -> float:
     """
     ...
 
+def soundex_code(s: str, ascii_only: bool = False) -> str:
+    """Calculates the American Soundex of a string. Note that Soundex is only defined
+    for ASCII strings, and the default is to use the `deunicode` crate to make a
+    best-effort map between Unicode and ASCII.
+
+    Parameters
+    ----------
+    s : str
+    ascii_only : bool, optional
+        Tells floof the string contains only ASCII characters (floof will not do ANY
+        validation), allowing for certain optimizations, by default False
+
+    Returns
+    -------
+    str
+    """
+    ...
+
 def _extract_graphemes(arr1: list[str]) -> list[ProcessedUnicode]: ...
 def _extract_bytes(arr1: list[str]) -> list[ProcessedAscii]: ...
 def _extract_graphemes_tup(arr1: list[str]) -> list[tuple[str, ProcessedUnicode]]: ...

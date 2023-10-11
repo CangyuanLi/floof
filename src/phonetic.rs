@@ -95,6 +95,20 @@ fn process_str(s: &str) -> String {
     s.to_uppercase().ascii_chars().flatten().collect::<String>()
 }
 
+pub fn soundex_code(s: &str) -> String {
+    get_soundex_code(process_str(s).as_bytes())
+        .into_iter()
+        .map(|c| char::from(c))
+        .collect()
+}
+
+pub fn soundex_code_ascii(s: &str) -> String {
+    get_soundex_code(s.as_bytes())
+        .into_iter()
+        .map(|c| char::from(c))
+        .collect()
+}
+
 pub fn soundex_similarity(slice1: &[u8], slice2: &[u8]) -> f64 {
     hamming::hamming_similarity(
         get_soundex_code(slice1).as_slice(),
