@@ -344,6 +344,18 @@ def _extract_bytes_tup(arr1: list[str]) -> list[tuple[str, ProcessedAscii]]: ...
 def _compare(
     arr1: list[str], arr2: list[str], func_name: RustScorers, n_jobs: int = 0
 ) -> list[float]: ...
+def _compare_slice(
+    arr1: list[ProcessedUnicode],
+    arr2: list[ProcessedUnicode],
+    func_name: RustScorers,
+    n_jobs: int = 0,
+) -> list[float]: ...
+def _compare_slice_ascii(
+    arr1: list[ProcessedAscii],
+    arr2: list[ProcessedAscii],
+    func_name: RustScorers,
+    n_jobs: int = 0,
+) -> list[float]: ...
 def _match(
     arr1: list[str],
     arr2: list[str],
@@ -354,8 +366,8 @@ def _match(
     quiet: bool = False,
 ): ...
 def _match_slice(
-    arr1: list[ProcessedUnicode],
-    arr2: list[ProcessedUnicode],
+    arr1: list[tuple[str, ProcessedUnicode]],
+    arr2: list[tuple[str, ProcessedUnicode]],
     func_name: RustSliceScorers,
     k_matches: int = 5,
     threshold: float = 0,
@@ -363,8 +375,8 @@ def _match_slice(
     quiet: bool = False,
 ): ...
 def _match_slice_ascii(
-    arr1: list[ProcessedAscii],
-    arr2: list[ProcessedAscii],
+    arr1: list[tuple[str, ProcessedAscii]],
+    arr2: list[tuple[str, ProcessedAscii]],
     func_name: RustSliceScorers,
     k_matches: int = 5,
     threshold: float = 0,
