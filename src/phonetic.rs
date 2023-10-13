@@ -98,14 +98,14 @@ fn process_str(s: &str) -> String {
 pub fn soundex_code(s: &str) -> String {
     get_soundex_code(process_str(s).as_bytes())
         .into_iter()
-        .map(|c| char::from(c))
+        .map(char::from)
         .collect()
 }
 
 pub fn soundex_code_ascii(s: &str) -> String {
     get_soundex_code(s.as_bytes())
         .into_iter()
-        .map(|c| char::from(c))
+        .map(char::from)
         .collect()
 }
 
