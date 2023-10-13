@@ -1,3 +1,5 @@
+use std::os::unix::process;
+
 use crate::hamming;
 use crate::utils;
 use deunicode::AsciiChars;
@@ -95,17 +97,25 @@ fn process_str(s: &str) -> String {
     s.to_uppercase().ascii_chars().flatten().collect::<String>()
 }
 
+fn byte_to_char(b: u8) -> String {
+    if b >= A {
+        char::from(b).to_string()
+    } else {
+        b.to_string()
+    }
+}
+
 pub fn soundex_code(s: &str) -> String {
     get_soundex_code(process_str(s).as_bytes())
         .into_iter()
-        .map(char::from)
+        .map(byte_to_char)
         .collect()
 }
 
 pub fn soundex_code_ascii(s: &str) -> String {
     get_soundex_code(s.as_bytes())
         .into_iter()
-        .map(char::from)
+        .map(byte_to_char)
         .collect()
 }
 
