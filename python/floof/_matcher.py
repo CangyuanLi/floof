@@ -2,6 +2,8 @@ from collections.abc import Callable
 from typing import Optional
 
 import pandas as pd
+import sklearn.feature_extraction.text as sklearn_text
+import sparse_dot_topn
 
 from ._rustyfloof import (
     _compare_slice,
@@ -127,6 +129,41 @@ class Matcher:
         final["score"] = 1
 
         return final
+
+    def tfidf(
+        self,
+        k_matches: Optional[int] = 5,
+        threshold: float = 0,
+        analyzer="char",
+        ngrams: int = 3,
+    ) -> pd.DataFrame:
+        # TODO: Investigate why exact matches don't always result in a score of 1
+        vocab = (
+            sklearn_text.CountVectorizer(
+                analyzer=analyzer, ngram_range=(ngrams, ngrams)
+            )
+            .fit(self._original_list + self._lookup_list)
+            .vocabulary_
+        )
+
+        tfidf_vectorizer = sklearn_text.TfidfVectorizer(
+            vocabulary=vocab, analyzer=analyzer, ngram_range=(ngrams, ngrams)
+        )
+        original = tfidf_vectorizer.fit_transform(self._original_list)
+        lookup = tfidf_vectorizer.fit_transform(self._lookup_list)
+
+        matches = sparse_dot_topn.awesome_cossim_topn(
+            original, lookup.transpose(), ntop=k_matches, lower_bound=threshold
+        ).tocoo()
+
+        match_list = [
+            (self._original_list[row_idx], self._lookup_list[col_idx], score)
+            for row_idx, col_idx, score in zip(matches.row, matches.col, matches.data)
+        ]
+
+        return pd.DataFrame(
+            match_list, columns=[self._original.name, self._lookup.name, "score"]
+        )
 
     def soundex(
         self, k_matches: Optional[int] = 5, threshold: float = 0

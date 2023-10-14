@@ -5,6 +5,7 @@ build-backend = "maturin"
 [project]
 name = "floof"
 requires-python = ">=3.7"
+dependencies = ["pandas", "scikit-learn", "sparse_dot_topn"]
 classifiers = ["Programming Language :: Rust", "Programming Language :: Python"]
 
 [tool.maturin]
