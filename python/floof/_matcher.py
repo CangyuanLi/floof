@@ -152,8 +152,16 @@ class Matcher:
         original = tfidf_vectorizer.fit_transform(self._original_list)
         lookup = tfidf_vectorizer.fit_transform(self._lookup_list)
 
+        # sparse_dot_topn requires n_jobs >= 1, which is different from the scikit-learn
+        # api the rest of the package mimics
+        n_jobs = self._n_jobs if self._n_jobs >= 1 else 1
+
         matches = sparse_dot_topn.awesome_cossim_topn(
-            original, lookup.transpose(), ntop=k_matches, lower_bound=threshold
+            original,
+            lookup.transpose(),
+            ntop=k_matches,
+            lower_bound=threshold,
+            n_jobs=n_jobs,
         ).tocoo()
 
         match_list = [
