@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Union
 
 import pandas as pd
-import tqdm
 
 from ._rustyfloof import _compare
 from .utils.types import EditDistanceScorers, PhoneticScorers
@@ -47,22 +46,6 @@ class Comparer:
     def _normalize(self):
         self._original = self._original.fillna("")
         self._lookup = self._lookup.fillna("")
-
-    def _apply_score(
-        self, match_func: Callable, scorer: Callable, already_ratio: bool = False
-    ) -> list[float]:
-        score_lst = []
-        with tqdm.tqdm(total=len(self._original), disable=self._quiet) as pbar:
-            for o_str, lu_str in zip(self._original, self._lookup):
-                score, _, _ = match_func(o_str, lu_str, scorer)
-                score_lst.append(score)
-
-                pbar.update(1)
-
-        if already_ratio:
-            return score_lst
-
-        return [i * 100 for i in score_lst]
 
     def jaccard(self) -> list[float]:
         scorer = "jaccard_ascii" if self._ascii_only else "jaccard"
