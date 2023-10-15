@@ -151,3 +151,5 @@ cython_debug/
 
 **/*-checkpoint*
 **/temp.py
+
+release.py
