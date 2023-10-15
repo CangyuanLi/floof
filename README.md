@@ -1,13 +1,15 @@
-# floof: simple fuzzymatching / comparison library
+# floof: simple fuzzymatching library
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/floof)
 
 ## What is it?
 
-**floof** is a Python package that makes fuzzymatching easy. Fuzzymatching is a common data task
-required whenever two strings don't quite exactly match. There are many algorithms to calculate
-string similarity, with dozens of disparate implementations. **floof** aims to collect all of these
-in an easy-to-use package, and reduce the boilerplate needed to apply these algorithms to your
-data.
+**floof** is a Python package that makes fuzzymatching / record linkage / entity resolution fast and easy. 
+Fuzzymatching is a common data task required whenever two strings don't quite exactly match. However, it easy to run
+into performance problems, especially when datasets are large. **floof** aims to provide two things. The first is
+performance at scale. Most of the core logic, from the string similarity implementations to threading, is implemented
+in Rust. This makes **floof** very fast and memory efficient, even compared to other libraries that implement edit
+distance algorithms in lower-level languages, since they usually do not provide threading support. The second is a
+simple, high-level Python API that provides a suite of different algorithms and makes matching as easy as calling a one-liner.
 
 # Usage:
 
@@ -33,9 +35,15 @@ First, import the library.
 import floof
 ```
 
-Floof provides two classes: Comparer and Matcher. Both are instantiated the same way, taking as
+The main workhorses of **floof** are its three classes: `Comparer`, `Matcher`, and `Linker`.
+In addition, the base string similarity algorithms are also exposed. It is recommended that
+you only use these for prototyping and testing, as the classes are able take advantage of many
+optimizations (such as Rust threading) and provide a much more ergonomic interface for
+most common tasks. 
+
+`Comparer` and `Matcher`. Both are instantiated the same way, taking as
 arguments two Pandas Series, an "original" and a "lookup", although in practice the order doesn't
-madder.
+matter. A `Linker` class that implements Record Linkage is coming soon!
 
 ```python
 matcher = floof.Matcher(original, lookup)
