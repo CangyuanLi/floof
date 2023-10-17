@@ -383,7 +383,7 @@ fn match_slice_core<T: PartialEq + Sync + Eq + std::hash::Hash>(
     n_jobs: usize,
     quiet: bool,
 ) -> PyResult<Vec<utils::ScoreTuple>> {
-    if k_matches == slice2.len() {
+    if k_matches >= slice2.len() {
         if n_jobs == 0 {
             Ok(fuzzymatch_slice_all(slice1, slice2, func, threshold, quiet))
         } else if n_jobs == 1 {
