@@ -4,6 +4,7 @@ import string
 from pathlib import Path
 
 import polars as pl
+import rapidfuzz
 
 import floof
 
@@ -60,7 +61,7 @@ def create_ascii_db():
 
 
 def main():
-    df = pl.scan_parquet(DAT_PATH / "ascii.parquet").fetch(100_000)
+    df = pl.scan_parquet(DAT_PATH / "ascii.parquet").fetch(10_000)
     matcher_unicode = floof.Matcher(df.get_column("col1"), df.get_column("col2"))
     matcher_ascii = floof.Matcher(
         df.get_column("col1"), df.get_column("col2"), ascii_only=True
@@ -69,7 +70,32 @@ def main():
     # matcher_unicode._get_all_matches_rust("hamming_ascii", k_matches=5, threshold=0)
     # matcher_unicode._get_all_matches_rust("jaro_ascii", k_matches=5, threshold=0)
     # matcher_ascii.jaro()
-    matcher_ascii.hamming()
+    # matcher_ascii.hamming()
+    import multiprocessing
+    import time
+
+    import pandas as pd
+
+    lst1 = df.get_column("col1").to_list()
+    lst2 = df.get_column("col2").to_list()
+
+    # start = time.time()
+    # res = [(o, l) for o in lst1 for l in lst2]
+    # score = rapidfuzz.process.cdist(
+    #     lst1,
+    #     lst2,
+    #     scorer=rapidfuzz.distance.Jaro.normalized_similarity,
+    #     workers=-1,
+    # ).ravel()
+    # x = pd.DataFrame(res)
+    # x["score"] = score
+    # print(time.time() - start)
+
+    start = time.time()
+    matcher_ascii._quiet = True
+    matcher_ascii._n_jobs = multiprocessing.cpu_count()
+    matcher_ascii.jaro()
+    print(time.time() - start)
 
 
 if __name__ == "__main__":
